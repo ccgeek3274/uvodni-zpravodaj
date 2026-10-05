@@ -18,7 +18,7 @@ vm.runInContext(m[1], ctx);
 
 const { splitFlags, parseRoster, duplicateGroups, dupSuffixes, displayName,
         bergerOk, assignStartNumbers, parseRounds, fmtTime, matchTime, roundHeader, defaultLastNote,
-        scheduleView, schedCols, requirementLines, refShort, abbrev, suggestFname, resolveFname } = ctx;
+        scheduleView, schedCols, requirementLines, refShort, calendarMonths, calendarLegend, parseCzDate, abbrev, suggestFname, resolveFname } = ctx;
 const CONTENT = 11112;  // šířka sazby A4 s okraji 0,7 cm (top-level const není v kontextu)
 const plain = o => JSON.parse(JSON.stringify(o));
 
@@ -161,4 +161,28 @@ test('refShort — příjmení + iniciály křestních jmen', () => {
   assert.equal(refShort('Burda'), 'Burda');
   assert.equal(refShort(''), '');
   assert.equal(refShort(null), '');
+});
+
+test('calendarMonths — měsíce od prvního do posledního kola, týdny po–ne, dny utkání', () => {
+  const rounds = [{ nr: 1, date: '18.10.2026' }, { nr: 2, date: '08.11.2026' }, { nr: 3, date: '10.01.2027' }];
+  const ms = calendarMonths(rounds);
+  assert.deepEqual(plain(ms.map(m => m.name)), ['Říjen 2026', 'Listopad 2026', 'Prosinec 2026', 'Leden 2027']);
+  ms.forEach(m => { assert.equal(m.weeks.length, 6); m.weeks.forEach(w => assert.equal(w.length, 7)); });
+  // 1. 10. 2026 je čtvrtek → první týden: po–st prázdné
+  const oct = ms[0];
+  assert.deepEqual(plain(oct.weeks[0].map(c => c && c.d)), [null, null, null, 1, 2, 3, 4]);
+  // 18. 10. 2026 je neděle (poslední sloupec) a je to 1. kolo
+  const d18 = oct.weeks.flat().find(c => c && c.d === 18);
+  assert.deepEqual(plain(d18.rounds), [1]);
+  assert.equal(oct.weeks[2][6].d, 18);
+  // 31 dní v říjnu, mimo měsíc null
+  assert.equal(oct.weeks.flat().filter(Boolean).length, 31);
+  assert.equal(ms[2].weeks.flat().filter(c => c && c.rounds.length).length, 0);   // prosinec bez kola
+  assert.deepEqual(plain(calendarMonths([])), []);
+});
+
+test('calendarLegend / parseCzDate', () => {
+  assert.equal(parseCzDate('x'), null);
+  assert.equal(calendarLegend([{ nr: 1, date: '18.10.2026' }, { nr: 2, date: '08.11.2026' }]).replace(/\u00A0/g, '_'),
+               '1._kolo_ne_18._10._2026  ·  2._kolo_ne_8._11._2026');
 });

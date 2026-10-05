@@ -172,6 +172,13 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .fit-warn { width:794px; max-width:100%; margin:0 auto 10px; padding:8px 12px; font-size:13px;
   background:#fff3cd; color:#664d03; border:1px solid #e6c46a; border-radius:2px; }
 .doc .pair { display:flex; align-items:flex-start; }
+.doc .pgbr { margin:24px -26.5px; border-top:1px dashed #bbb; text-align:center; font-size:11px; color:#999; line-height:0; }
+.doc .pgbr span { background:#fff; padding:0 8px; }
+.doc table.cal td { text-align:center; }
+.doc table.cal tr.dw td { height:32px; }
+.doc table.cal td.hit { background:#C8D9F0; font-weight:bold; }
+.doc table.cal td.we { color:#808080; }
+.doc .legend { font-size:12px; margin-top:4px; }
 .fit-warn ul { margin:4px 0 0; padding-left:20px; }
 
 @media (max-width:640px) {
@@ -272,6 +279,15 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
         </div>
         <span class="hint">Sloupec „Rozhodčí“ v rozlosování — jména doplníte v náhledu (žlutá pole), nebo později ve Wordu.</span>
       </div>
+
+      <div class="field">
+        <span class="eyebrow">Kalendář</span>
+        <div class="seg" id="calSeg">
+          <button type="button" data-v="1" class="on">Ano</button>
+          <button type="button" data-v="0">Ne</button>
+        </div>
+        <span class="hint">Na konec dokumentu přidá stránku s kalendářem (dva měsíce vedle sebe, týdny po–ne) se zvýrazněnými dny utkání.</span>
+      </div>
     </div>
   </div>
 
@@ -346,7 +362,9 @@ const BLOCK_MS     = 10 * 60 * 1000;
 
 const C_HDR    = 'C8D9F0';
 const C_SUB    = 'F2F2F2';
-const C_TIME   = 'C00000';   // jiný začátek utkání v rozlosování (červeně)
+const C_TIME   = 'C00000';
+const C_CAL    = 'C8D9F0';   // den utkání v kalendáři
+const C_WKND   = '808080';   // sobota/neděle bez utkání   // jiný začátek utkání v rozlosování (červeně)
 const C_WHITE  = 'FFFFFF';
 const C_BORDER = 'AAAAAA';
 const B_S   = { style: 'single', size: 4, color: C_BORDER };
@@ -365,6 +383,7 @@ const CHAPTERS = [
   'Další oznámení',
   'Stránky soutěže',
   'Hlášení výsledků',
+  'Kalendář soutěže',          // volitelná stránka na konci (cfg.calendar)
 ];
 
 /* ── Cache (localStorage) ──────────────────────────────────────────
@@ -613,6 +632,63 @@ function refShort(s) {
   })).join(' ');
 }
 
+/* ── Kalendář ───────────────────────────────────────────────────── */
+const CZ_MONTHS = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen',
+                   'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'];
+const CZ_DAYS   = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
+const CZ_DOW    = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
+const CAL_WEEKS = 6;               // každý měsíc 6 týdnů → stejně vysoké měsíce vedle sebe
+const CAL_ROW_H = 480;             // výška řádku dne (DXA ≈ 0,85 cm)
+/* „18.10.2026“ → Date (místní půlnoc), jinak null */
+function parseCzDate(s) {
+  const m = /^\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})\s*$/.exec(s || '');
+  return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+}
+/* Měsíce od prvního do posledního kola; týdny po–ne, dny mimo měsíc = null,
+   den = { d, rounds: [čísla kol] }. */
+function calendarMonths(rounds) {
+  const byDay = {};
+  let min = null, max = null;
+  rounds.forEach(function(r) {
+    const dt = parseCzDate(r.date);
+    if (!dt) return;
+    const k = dt.getFullYear() + '-' + dt.getMonth() + '-' + dt.getDate();
+    (byDay[k] = byDay[k] || []).push(r.nr);
+    if (!min || dt < min) min = dt;
+    if (!max || dt > max) max = dt;
+  });
+  if (!min) return [];
+  const out = [];
+  for (let y = min.getFullYear(), m = min.getMonth();
+       y < max.getFullYear() || (y === max.getFullYear() && m <= max.getMonth());
+       m === 11 ? (y++, m = 0) : m++) {
+    const offset = (new Date(y, m, 1).getDay() + 6) % 7;   // pondělí = 0
+    const days = new Date(y, m + 1, 0).getDate();
+    const weeks = [];
+    for (let w = 0; w < CAL_WEEKS; w++) {
+      const wk = [];
+      for (let i = 0; i < 7; i++) {
+        const d = w * 7 + i - offset + 1;
+        wk.push(d >= 1 && d <= days ? { d: d, rounds: byDay[y + '-' + m + '-' + d] || [] } : null);
+      }
+      weeks.push(wk);
+    }
+    out.push({ y: y, m: m, name: CZ_MONTHS[m] + ' ' + y, weeks: weeks });
+  }
+  return out;
+}
+/* Přehled kol pod kalendářem: „1. kolo ne 18. 10. 2026 · 2. kolo …“ */
+function calendarLegend(rounds) {
+  return rounds.map(function(r) {
+    const dt = parseCzDate(r.date);
+    // uvnitř položky nezlomitelné mezery → řádek se zalomí jen mezi koly
+    return (r.nr + '. kolo ' + (dt ? CZ_DOW[dt.getDay()] + ' ' + dt.getDate() + '. ' + (dt.getMonth() + 1) + '. ' + dt.getFullYear() : r.date))
+      .replace(/ /g, '\u00A0');
+  }).join('  ·  ');
+}
+const CAL_GAP = 400;
+const CAL_COL = Math.floor((CONTENT - CAL_GAP) / 14);
+
 /* Kapitola Specifické požadavky: seznam jiných začátků (prázdné = žádné) */
 function requirementLines(d, cfg) {
   const out = [];
@@ -652,7 +728,7 @@ let _cfg  = null;
 const CFG_PREFIX = 'uzcfg_';   // jiný prefix než cache → „Vymazat cache“ ho nesmaže
 
 function defaultCfg() {
-  return { defTime: '10:00', home: {}, away: {}, lastUniform: true, lastNote: null, withRef: true, refs: {} };
+  return { defTime: '10:00', home: {}, away: {}, lastUniform: true, lastNote: null, withRef: true, refs: {}, calendar: true };
 }
 function loadCfg(compId) {
   let c = null;
@@ -740,6 +816,9 @@ function renderSettings() {
   document.getElementById('lastNote').value = _cfg.lastNote == null ? defaultLastNote(_cfg.defTime) : _cfg.lastNote;
   [].forEach.call(document.querySelectorAll('#refSeg button'), function(x) {
     x.classList.toggle('on', (x.dataset.v === '1') === !!_cfg.withRef);
+  });
+  [].forEach.call(document.querySelectorAll('#calSeg button'), function(x) {
+    x.classList.toggle('on', (x.dataset.v === '1') === !!_cfg.calendar);
   });
   let h = '<thead><tr><th>St.č.</th><th>Družstvo</th><th>Doma</th><th>Venku</th></tr></thead><tbody>';
   _data.teams.forEach(function(t) {
@@ -864,6 +943,30 @@ function previewHtml(d, cfg) {
        + (d.manager.email ? '<br>' + esc(d.manager.email) : '')
        + (d.manager.phone ? '<br>tel: ' + esc(d.manager.phone) : '') + '</div>';
   }
+
+  // Kalendář (volitelná stránka)
+  if (cfg.calendar) {
+    h += '<div class="pgbr"><span>nová stránka</span></div>' + chap(9);
+    const cw = Array(7).fill(CAL_COL), mw = px(7 * CAL_COL);
+    rosterPairs(calendarMonths(d.rounds)).forEach(function(pair) {
+      h += '<div class="pair" style="gap:' + px(CONTENT - 14 * CAL_COL) + '">';
+      pair.forEach(function(mo) {
+        h += '<table class="cal" style="width:' + mw + '">' + colgroup(cw) + '<tbody>'
+           + '<tr class="tn"><td colspan="7" style="text-align:left">' + esc(mo.name) + '</td></tr>'
+           + '<tr class="sh">' + CZ_DAYS.map(function(x) { return '<td>' + x + '</td>'; }).join('') + '</tr>';
+        mo.weeks.forEach(function(wk) {
+          h += '<tr class="dw">' + wk.map(function(c, i) {
+            if (!c) return '<td></td>';
+            const cls = c.rounds.length ? 'hit' : (i >= 5 ? 'we' : '');
+            return '<td class="' + cls + '"' + (c.rounds.length ? ' title="' + c.rounds.join('., ') + '. kolo"' : '') + '>' + c.d + '</td>';
+          }).join('') + '</tr>';
+        });
+        h += '</tbody></table>';
+      });
+      h += '</div>';
+    });
+    h += '<div class="d-p legend">' + esc(calendarLegend(d.rounds)) + '</div>';
+  }
   return h + '</div>';
 }
 
@@ -936,6 +1039,46 @@ function link(text, url) {
 function chapter(i) {
   return para(CHAPTERS[i], { heading: docx.HeadingLevel.HEADING_1, numbering: { reference: 'kap', level: 0 },
                              spacing: { before: 240, after: 120 }, keepNext: true });
+}
+
+/* Kalendář: dvojice měsíců jako jedna plochá tabulka (7 dnů | mezera | 7 dnů),
+   stejný princip hran jako u soupisek. Nad měsícem název 12 pt bez hran,
+   dny utkání podbarvené a tučně, víkend šedě. */
+function calHalf(mo, ri, kn) {
+  const w7 = 7 * CAL_COL;
+  if (!mo) return [cell('', { w: w7, span: 7, noBorder: true, keepNext: kn })];
+  if (ri === 0) return [cell(mo.name, { w: w7, span: 7, bold: true, size: 24, keepNext: kn,
+                                        borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } })];
+  if (ri === 1) return CZ_DAYS.map(function(x) {
+    return cell(x, { w: CAL_COL, bold: true, bg: C_SUB, align: 'center', keepNext: kn });
+  });
+  return mo.weeks[ri - 2].map(function(c, i) {
+    if (!c) return cell('', { w: CAL_COL, keepNext: kn });
+    const hit = c.rounds.length > 0;
+    return cell([new docx.TextRun({ text: String(c.d), bold: hit || undefined,
+                                    color: !hit && i >= 5 ? C_WKND : undefined })],
+                { w: CAL_COL, align: 'center', bg: hit ? C_CAL : undefined, keepNext: kn });
+  });
+}
+function calendarPair(pair) {
+  const gapW = CONTENT - 14 * CAL_COL;
+  const cols = Array(7).fill(CAL_COL).concat([gapW], Array(7).fill(CAL_COL));
+  const n = 2 + CAL_WEEKS, rows = [];
+  for (let ri = 0; ri < n; ri++) {
+    const kn = ri < n - 1;
+    rows.push(new docx.TableRow({
+      cantSplit: true,
+      height: ri >= 1 ? { value: ri === 1 ? 320 : CAL_ROW_H, rule: docx.HeightRule.ATLEAST } : undefined,
+      children: calHalf(pair[0], ri, kn)
+        .concat([cell('', { w: gapW, keepNext: kn, borders: {
+          top: B_N, bottom: B_N, left: ri > 0 && pair[0] ? B_S : B_N, right: ri > 0 && pair[1] ? B_S : B_N } })],
+          calHalf(pair[1], ri, kn)),
+    }));
+  }
+  return new docx.Table({
+    width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows,
+    borders: { top: B_N, bottom: B_N, left: B_N, right: B_N, insideHorizontal: B_N, insideVertical: B_N },
+  });
 }
 
 /* Dvojice soupisek vedle sebe jako jedna plochá tabulka:
@@ -1056,6 +1199,14 @@ function buildDocx(d, cfg) {
     if (d.manager.email) sig.push(new docx.TextRun({ text: '', break: 1 }), link(d.manager.email, 'mailto:' + d.manager.email));
     if (d.manager.phone) sig.push(new docx.TextRun({ text: 'tel: ' + d.manager.phone, break: 1 }));
     ch.push(para(sig, { spacing: { before: 240, after: 0 } }));
+  }
+
+  if (cfg.calendar) {
+    ch.push(new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_1, numbering: { reference: 'kap', level: 0 },
+                                 pageBreakBefore: true, keepNext: true, spacing: { before: 0, after: 120 },
+                                 children: [run(CHAPTERS[9])] }));
+    rosterPairs(calendarMonths(d.rounds)).forEach(function(pair) { ch.push(calendarPair(pair), gap()); });
+    ch.push(para([new docx.TextRun({ text: calendarLegend(d.rounds), size: 18 })], { spacing: { before: 60, after: 0 } }));
   }
 
   const header = new docx.Header({ children: [new docx.Paragraph({
@@ -1330,6 +1481,14 @@ window.addEventListener('DOMContentLoaded', function() {
       if (!_cfg) return;
       _cfg.withRef = b.dataset.v === '1';
       [].forEach.call(document.querySelectorAll('#refSeg button'), function(x) { x.classList.toggle('on', x === b); });
+      saveCfg(); renderPreview();
+    });
+  });
+  [].forEach.call(document.querySelectorAll('#calSeg button'), function(b) {
+    b.addEventListener('click', function() {
+      if (!_cfg) return;
+      _cfg.calendar = b.dataset.v === '1';
+      [].forEach.call(document.querySelectorAll('#calSeg button'), function(x) { x.classList.toggle('on', x === b); });
       saveCfg(); renderPreview();
     });
   });

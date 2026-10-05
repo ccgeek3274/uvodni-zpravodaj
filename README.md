@@ -26,6 +26,9 @@ dále **Specifické požadavky** (seznam jiných začátků) a **Stránky soutě
      musí začínat v …“, lze přepsat nebo smazat).
    - **Rozhodčí** Ano/Ne — sloupec v rozlosování; jména se píšou do žlutých
      polí v náhledu (Enter = další zápas) nebo později ve Wordu.
+   - **Kalendář** Ano/Ne (výchozí Ano) — na konec dokumentu stránka
+     „Kalendář soutěže“: měsíce od prvního do posledního kola, dva vedle sebe,
+     týdny po–ne, dny utkání tučně podbarvené, víkend šedě, pod tím přehled kol.
 3. **Náhled** — rozměry tabulek jako v DOCX, nahoře upozornění (konflikty
    časů, neověřená startovní čísla, nerozlišené shodné jméno).
 4. **Stažení** — DOCX, název souboru navržen jako `rpb_26_27_uz`.
