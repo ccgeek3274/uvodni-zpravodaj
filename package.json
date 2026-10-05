@@ -1,0 +1,11 @@
+{
+  "name": "uvodni-zpravodaj",
+  "version": "1.0.0",
+  "description": "Generátor úvodního zpravodaje soutěže družstev ŠSČR — soupisky a rozlosování do DOCX (jednosouborová webová aplikace).",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy"
+  }
+}

@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Úvodní zpravodaj</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- v8.5.0 má interní TDZ bug v UMD bundlu; 7.8.2 je stabilní. Na cdnjs docx není. -->
+<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"
+        integrity="sha384-zjTqOObJTD6OT6CUn8mSpDY+crIiP0cX457OjcZosSATiUFbmdXa9KRScjfLVxFH"
+        crossorigin="anonymous"></script>
+<script src="https://app.sachytynec.cz/back.js" defer></script>
+<style>
+:root {
+  /* Paper & Ink — stejný jazyk jako sscr-zpravodaj a sscr-soupiska */
+  --ink:        oklch(0.22 0.008 60);
+  --paper:      oklch(0.955 0.012 88);
+  --header:     oklch(0.925 0.013 86);
+  --screen:     oklch(0.20 0.006 60);
+  --field-bg:   oklch(0.99 0.004 88);
+  --field-bd:   oklch(0.55 0.012 60);
+  --divider:    oklch(0.85 0.012 78);
+  --muted:      oklch(0.45 0.012 60);
+  --muted-2:    oklch(0.50 0.012 60);
+  --muted-dark: oklch(0.70 0.012 75);
+  --highlight:  oklch(0.91 0.012 84);
+  --cream:      oklch(0.95 0.012 88);
+  --radius: 3px;
+  --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+  --sans: 'Hanken Grotesk', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --ok:#1f7a3d; --err:#b3261e;
+}
+* { box-sizing:border-box; }
+html, body { margin:0; padding:0; }
+html { -webkit-text-size-adjust:100%; text-size-adjust:100%; }
+body {
+  font-family:var(--sans); background:var(--screen); color:var(--ink);
+  padding:52px 24px 80px; line-height:1.5;
+  -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+}
+.wrap { max-width:840px; margin:0 auto; }
+
+.app-head { margin-bottom:28px; }
+.checker { height:7px; width:116px; border-radius:2px; margin-bottom:18px;
+  background:repeating-conic-gradient(oklch(0.95 0.012 88) 0 90deg, oklch(0.34 0.01 60) 0 180deg) 0 0 / 14px 14px; }
+.app-title { font-family:var(--mono); font-size:28px; font-weight:700; letter-spacing:0.04em;
+  text-transform:uppercase; color:var(--cream); line-height:1.1; margin:0; }
+.app-sub { font-size:14.5px; color:var(--muted-dark); margin:10px 0 0; }
+
+.card { background:var(--paper); border:1px solid var(--ink); border-radius:var(--radius); }
+.card-strip { display:flex; align-items:center; gap:12px; padding:15px 20px;
+  border-bottom:1px solid var(--ink); background:var(--header); border-radius:2px 2px 0 0; }
+.card-strip h2 { margin:0; font-family:var(--mono); font-size:14px; font-weight:700; letter-spacing:0.03em;
+  text-transform:uppercase; color:var(--ink); }
+.strip-right { margin-left:auto; font-family:var(--mono); font-size:12.5px; color:var(--muted); }
+.card-body { padding:20px; }
+
+.eyebrow { font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:0.06em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:7px; display:block; }
+input, textarea, select {
+  width:100%; padding:11px 14px; font-family:var(--sans); font-size:14.5px; color:var(--ink);
+  background:var(--field-bg); border:1px solid var(--field-bd); border-radius:var(--radius);
+  transition:border-color .15s; }
+input, select { height:44px; padding:0 14px; }
+input[type=number], #fname { font-family:var(--mono); }
+input[type=checkbox] { width:auto; height:auto; margin:0 8px 0 0; vertical-align:middle; }
+input::placeholder { color:var(--field-bd); }
+input:focus, select:focus { outline:none; border-color:var(--ink); }
+input:disabled { opacity:.6; cursor:not-allowed; }
+.hint { display:block; margin-top:7px; font-size:12px; color:var(--muted-2); line-height:1.5;
+  font-family:var(--sans); font-weight:400; letter-spacing:0; text-transform:none; }
+.hint code { font-family:var(--mono); font-size:11.5px; background:var(--highlight);
+  color:oklch(0.28 0.008 60); padding:1px 6px; border-radius:2px; }
+
+.field { margin-top:18px; }
+.field:first-child { margin-top:0; }
+.row-l { display:grid; grid-template-columns:160px 1fr; gap:14px; align-items:start; }
+.fname-preview { font-family:var(--mono); font-weight:600; color:var(--ink); text-transform:none; letter-spacing:0; }
+
+button { font-family:var(--mono); cursor:pointer; border-radius:var(--radius);
+  border:1px solid transparent; transition:filter .15s, background .15s, opacity .15s; }
+button:disabled { opacity:.45; cursor:not-allowed; }
+button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
+.actions { display:flex; gap:12px; margin-top:20px; flex-wrap:wrap; align-items:center; }
+.btn-primary { background:var(--ink); color:var(--cream); border-color:var(--ink);
+  font-size:14px; font-weight:600; height:44px; padding:0 22px; letter-spacing:0.02em; }
+.btn-primary:hover:not(:disabled) { filter:brightness(1.35); }
+.btn-outline { background:var(--paper); color:var(--ink); border:1px solid var(--ink);
+  font-size:13px; font-weight:600; height:44px; padding:0 16px; }
+.btn-outline:hover:not(:disabled) { background:var(--header); }
+
+#msg, .msg2 { margin-top:14px; font-size:13px; min-height:18px; font-family:var(--mono); color:var(--muted); }
+.ok  { color:var(--ok); }
+.warn { color:oklch(0.52 0.12 70); }
+.err { color:var(--err); }
+.note { margin-top:12px; padding:12px 14px; font-family:var(--sans); font-size:12.5px; color:var(--muted);
+  line-height:1.5; background:var(--field-bg); border:1px solid var(--divider); border-radius:var(--radius); }
+
+#compNameView { margin-top:7px; font-size:12.5px; color:var(--muted-2); min-height:17px; }
+#compNameView b { color:var(--ink); font-weight:600; }
+#compNameView .region { display:block; }
+
+.stack { display:flex; flex-direction:column; gap:16px; }
+.hidden { display:none !important; }
+
+/* ── Combo s našeptáváním (stejné jako sscr-zpravodaj) ─────────── */
+.ac-wrap { position:relative; }
+.ac-drop { position:absolute; z-index:30; left:0; right:0; top:calc(100% + 4px); max-height:300px; overflow:auto;
+  overscroll-behavior:contain;
+  background:var(--field-bg); border:1px solid var(--field-bd); border-radius:var(--radius);
+  box-shadow:0 6px 18px rgba(20,16,10,.12); }
+.ac-item { display:flex; gap:10px; align-items:baseline; width:100%; height:auto; padding:10px 14px; text-align:left;
+  border:none; border-bottom:1px solid var(--divider); border-radius:0; background:var(--field-bg); cursor:pointer; }
+.ac-item:last-child { border-bottom:none; }
+.ac-item:hover { background:var(--header); }
+.ac-item .nm { font-family:var(--sans); font-weight:600; font-size:14.5px; color:var(--ink); }
+.ac-empty { padding:11px 14px; font-size:13.5px; color:var(--muted-2); }
+
+/* ── Přepínač Ano / Ne ─────────────────────────────────────────── */
+.seg { display:inline-flex; border:1px solid var(--ink); border-radius:var(--radius); overflow:hidden; }
+.seg button { height:34px; padding:0 16px; font-size:13px; font-weight:600; border:none; border-radius:0;
+  background:var(--field-bg); color:var(--ink); }
+.seg button + button { border-left:1px solid var(--ink); }
+.seg button.on { background:var(--ink); color:var(--cream); }
+
+/* ── Nastavení: tabulka družstev s časy ───────────────────────── */
+.time-in { width:136px; height:36px; padding:0 8px; font-family:var(--mono); font-size:13.5px; }
+.time-in.dflt { color:var(--field-bd); }   /* předvyplněný výchozí začátek (není výjimka) */
+.teams { width:100%; border-collapse:collapse; font-size:13.5px; }
+.teams th { font-family:var(--mono); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase;
+  color:var(--muted); text-align:left; padding:6px 8px; border-bottom:1px solid var(--ink); }
+.teams td { padding:5px 8px; border-bottom:1px solid var(--divider); vertical-align:middle; }
+.teams td.n { font-family:var(--mono); color:var(--muted); width:40px; }
+.teams td.t { width:152px; }
+.teams-wrap { overflow-x:auto; }
+.chk { font-size:14px; display:flex; align-items:center; }
+
+/* ── Náhled dokumentu ───────────────────────────────────────────
+   Rozměry 1:1 s DOCX: 1 px = 15 DXA, pt × 4/3 = px.
+   Stránka A4 = 794 px, okraje: boky 0,7 cm = 397 DXA = 26.5 px,
+   nahoře/dole 1,2 cm = 680 DXA = 45.3 px (záhlaví/zápatí 0,5 cm od kraje). */
+.preview-body { padding:12px; background:var(--header); overflow-x:auto; }
+.doc {
+  width:794px; margin:0 auto; background:#fff; color:#000;
+  font-family:Arial, Helvetica, sans-serif; font-size:13.33px; line-height:1.15;
+  padding:45.3px 26.5px 45.3px; border:1px solid var(--divider);
+}
+.doc-hdr { text-align:right; font-size:12px; color:#000; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis; margin-bottom:20px; }
+.doc .d-title { text-align:center; font-size:26.67px; font-weight:bold; margin:0 0 8px; }
+.doc .d-sub { text-align:center; font-size:18.67px; margin:0 0 6px; }
+.doc .d-h { font-size:18.67px; font-weight:bold; margin:16px 0 8px; }
+.doc .d-p { margin:0 0 8px; }
+.doc .d-p a { color:#0563C1; }
+.doc table { border-collapse:collapse; table-layout:fixed; font-size:13.33px; line-height:1.15; margin-bottom:13.33px; }
+.doc td { border:1px solid #AAA; padding:1.6px 3.33px; vertical-align:middle;
+  overflow:hidden; overflow-wrap:anywhere; }
+.doc .c { text-align:center; } .doc .r { text-align:right; }
+/* čísla (pořadí, St., ratingy) se nezalamují — sloupce jsou úzké stejně jako v DOCX */
+.doc td.c { white-space:nowrap; overflow-wrap:normal; text-overflow:clip; }
+.doc tr.th td { background:#C8D9F0; font-weight:bold; }
+.doc tr.tn td { font-size:16px; font-weight:bold; border-top:none; border-left:none; border-right:none; }
+.doc tr.rh td { font-weight:bold; border-top:none; border-left:none; border-right:none; }
+.doc tr.sh td { background:#F2F2F2; font-weight:bold; }
+.doc .tm { font-weight:bold; color:#C00000; }
+.doc .ed { outline:none; background:#fff6cc; box-shadow:inset 0 -1px 0 #c9a227; border-radius:1px;
+  display:inline-block; min-width:100%; min-height:1.15em; vertical-align:bottom; }
+.doc .ed:focus { background:#ffeb99; }
+.doc .empty { color:#999; font-style:italic; }
+.fit-warn { width:794px; max-width:100%; margin:0 auto 10px; padding:8px 12px; font-size:13px;
+  background:#fff3cd; color:#664d03; border:1px solid #e6c46a; border-radius:2px; }
+.doc .pair { display:flex; align-items:flex-start; }
+.fit-warn ul { margin:4px 0 0; padding-left:20px; }
+
+@media (max-width:640px) {
+  body { padding:32px 16px 60px; }
+  .row-l { grid-template-columns:1fr; }
+  .preview-body { padding:8px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="app-head">
+    <div class="checker"></div>
+    <h1 class="app-title">Úvodní zpravodaj</h1>
+    <p class="app-sub">Soupisky družstev a rozlosování soutěže družstev ŠSČR do DOCX — data z api.chess.cz.</p>
+  </div>
+
+  <div class="stack">
+
+  <div class="card">
+    <div class="card-strip"><h2>1 · Soutěž</h2></div>
+    <div class="card-body">
+      <div class="field row-l">
+        <div>
+          <label class="eyebrow" for="season">Sezóna</label>
+          <div class="ac-wrap">
+            <input type="text" id="season" placeholder="— sezóna —" autocomplete="off">
+            <div id="seasonDrop" class="ac-drop" style="display:none"></div>
+          </div>
+        </div>
+        <div>
+          <label class="eyebrow" for="kraj">Kraj / svaz</label>
+          <div class="ac-wrap">
+            <input type="text" id="kraj" placeholder="načítám…" autocomplete="off" disabled>
+            <div id="krajDrop" class="ac-drop" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="eyebrow" for="soutezSel">Soutěž</label>
+        <div class="ac-wrap">
+          <input type="text" id="soutezSel" placeholder="— nejprve vyberte kraj —" autocomplete="off" disabled>
+          <div id="soutezSelDrop" class="ac-drop" style="display:none"></div>
+        </div>
+        <span class="hint">Vybraná soutěž vyplní ID níže. ID lze zadat i ručně.</span>
+      </div>
+
+      <div class="field">
+        <label class="eyebrow" for="compId">ID soutěže</label>
+        <input type="number" id="compId" placeholder="vyberte v menu výše" style="max-width:220px">
+        <div id="compNameView"></div>
+      </div>
+
+      <div class="actions">
+        <button id="btn-load" class="btn-primary" onclick="loadData()">Načíst data</button>
+        <button id="btn-clear" class="btn-outline" onclick="clearCache()"
+                title="Po změně soupisek nebo rozlosování na stránkách ŠSČR">Vymazat cache</button>
+      </div>
+      <div id="msg"></div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="sec-settings">
+    <div class="card-strip">
+      <h2>2 · Začátky utkání a rozhodčí</h2>
+      <span class="strip-right">pamatuje se pro soutěž</span>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <label class="eyebrow" for="defTime">Výchozí začátek utkání</label>
+        <input type="time" id="defTime" class="time-in" value="10:00">
+        <span class="hint">Standard je 10:00; některé soutěže mají v rozpisu jiný (např. 9:00).</span>
+      </div>
+
+      <div class="field">
+        <span class="eyebrow">Družstva s jiným začátkem</span>
+        <div class="teams-wrap"><table class="teams" id="teamsTbl"></table></div>
+        <span class="hint">Zašedlý čas = výchozí začátek (mění se s ním). Jiný čas se v rozlosování připíše červeně k domácímu družstvu.
+          Když se požadavek domácích (doma) a hostů (venku) liší, zapíše se místo času <code>???</code>.</span>
+      </div>
+
+      <div class="field">
+        <label class="chk"><input type="checkbox" id="lastUniform" checked>Poslední kolo: všechna utkání ve výchozí čas (výjimky se neuplatní)</label>
+        <div id="lastNoteWrap" style="margin-top:10px">
+          <label class="eyebrow" for="lastNote">Poznámka k poslednímu kolu</label>
+          <input type="text" id="lastNote">
+          <span class="hint">Připíše se do záhlaví posledního kola v závorce. Smazáním poznámka zmizí.</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <span class="eyebrow">Rozhodčí</span>
+        <div class="seg" id="refSeg">
+          <button type="button" data-v="1" class="on">Ano</button>
+          <button type="button" data-v="0">Ne</button>
+        </div>
+        <span class="hint">Sloupec „Rozhodčí“ v rozlosování — jména doplníte v náhledu (žlutá pole), nebo později ve Wordu.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card hidden" id="sec-preview">
+    <div class="card-strip">
+      <h2>3 · Náhled</h2>
+      <span class="strip-right">žlutá pole lze přepsat</span>
+    </div>
+    <div class="preview-body"><div id="preview"></div></div>
+  </div>
+
+  <div class="card hidden" id="sec-download">
+    <div class="card-strip"><h2>4 · Stažení</h2></div>
+    <div class="card-body">
+      <div class="field">
+        <label class="eyebrow" for="fname">Název souboru: <span id="fnamePreview" class="fname-preview"></span></label>
+        <input type="text" id="fname" spellcheck="false">
+      </div>
+      <div class="actions">
+        <button id="btn-dl" class="btn-primary" onclick="downloadDocx()">⬇ Stáhnout DOCX</button>
+      </div>
+      <div id="dlMsg" class="msg2"></div>
+      <div class="note">
+        • Kapitoly mimo soupisky a rozlosování jsou v dokumentu jen jako nadpisy — doplňte je ve Wordu.<br>
+        • Písmo je nastavené ve stylech dokumentu (Normální, Nadpis 1, Název…), ne u jednotlivých textů —
+          změnou stylu ve Wordu se změní v celém dokumentu.<br>
+        • Ela odpovídají <b>datu generování</b>.
+      </div>
+    </div>
+  </div>
+
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   DŮLEŽITÉ: žádný přístup k docx.* na top-levelu skriptu!
+   UMD bundle má interní TDZ chyby při inicializaci.
+   Veškerý přístup k docx.* probíhá uvnitř funkčních těl (lazy).
+   ================================================================ */
+
+/* ── Rozměry stránky (jako vzor rp_b_26_27-uz.docx) ─────────────── */
+const API     = 'https://api.chess.cz/api';
+const PAGE_W  = 11906;
+const PAGE_H  = 16838;
+// Okraje na tisknutelné minimum: běžné tiskárny netisknou ~4–5 mm od kraje.
+// Nahoře/dole víc místa kvůli záhlaví a zápatí (0,5 cm od kraje).
+const MARGIN_X = Math.round(0.7 * 567);   // 397 DXA
+const MARGIN_Y = Math.round(1.2 * 567);   // 680 DXA
+const HDR_DIST = Math.round(0.5 * 567);   // 284 DXA
+const CONTENT  = PAGE_W - 2 * MARGIN_X;   // 11112 DXA
+const FONT    = 'Arial';
+const FS      = 20;                    // 10 pt (half-points) — pevně, není volitelné
+
+// Soupiska: Šach. | Jméno | NRtg | IRtg | Z | Typ
+// Dvě soupisky vedle sebe: (šířka sazby − mezera) / 2 = 5456 DXA na soupisku.
+// Úzké sloupce mají šířku pro 4 číslice / „H,ZK“ + okraje buňky, zbytek jde jménu.
+const CELL_PAD    = 50;                    // vodorovný okraj buňky (DXA) — minimální, čitelný
+const ROSTER_GAP  = 200;                   // mezera mezi soupiskami vedle sebe
+const ROSTER_W    = Math.floor((CONTENT - ROSTER_GAP) / 2);
+const ROSTER_FIX  = [330, 0, 580, 580, 260, 600];   // šach. | jméno | NRtg | IRtg | Z | Typ
+const ROSTER_COLS = ROSTER_FIX.map(function(w) { return w || ROSTER_W - sum(ROSTER_FIX); });
+const ROSTER_HDRS = ['', 'Jméno', 'NRtg', 'IRtg', 'Z', 'Typ'];
+const Z_MARK = 'Z';                    // obsah buňky ve sloupci Z (základní sestava)
+
+// Rozlosování: Č. | St.č. | Družstvo | Výs. | Družstvo | St.č. | Rozhodčí
+const SCHED_HDRS = ['Č.', 'St.', 'Družstvo', '-', 'Družstvo', 'St.', 'Rozhodčí'];
+const COL_NR = 360, COL_STC = 440, COL_RES = 280, COL_REF = 1500;
+
+const API_INTERVAL = 300;
+const BLOCK_MS     = 10 * 60 * 1000;
+
+const C_HDR    = 'C8D9F0';
+const C_SUB    = 'F2F2F2';
+const C_TIME   = 'C00000';   // jiný začátek utkání v rozlosování (červeně)
+const C_WHITE  = 'FFFFFF';
+const C_BORDER = 'AAAAAA';
+const B_S   = { style: 'single', size: 4, color: C_BORDER };
+const B_ALL = { top: B_S, bottom: B_S, left: B_S, right: B_S };
+const B_N   = { style: 'nil', size: 0, color: 'auto' };   // „nil“ = výslovně bez hrany (jako Word)
+const B_NONE = { top: B_N, bottom: B_N, left: B_N, right: B_N };
+
+// Kapitoly podle vzoru; jen soupisky, rozlosování, požadavky a stránky se generují
+const CHAPTERS = [
+  'Hrací místnost',
+  'Adresář kapitánů, zástupců a organizačních pracovníků',
+  'Soupisky družstev',
+  'Rozlosování soutěže',
+  'Specifické požadavky',
+  'Rozhodčí',
+  'Další oznámení',
+  'Stránky soutěže',
+  'Hlášení výsledků',
+];
+
+/* ── Cache (localStorage) ──────────────────────────────────────────
+   Úvodní zpravodaj = data před startem soutěže, nic „živého“ → 1 h. */
+const TTL = 3_600_000;
+const CACHE_PREFIX = 'uz_';
+function cacheKey(path) { return CACHE_PREFIX + btoa(unescape(encodeURIComponent(path))); }
+function getCached(path) {
+  try {
+    const raw = localStorage.getItem(cacheKey(path));
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    if (Date.now() - ts > TTL) { localStorage.removeItem(cacheKey(path)); return null; }
+    return data;
+  } catch (e) { return null; }
+}
+function setCache(path, data) {
+  try { localStorage.setItem(cacheKey(path), JSON.stringify({ data, ts: Date.now() })); } catch (e) {}
+}
+function clearCache() {
+  const keys = [];
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      if (localStorage.key(i).startsWith(CACHE_PREFIX)) keys.push(localStorage.key(i));
+    }
+    keys.forEach(k => localStorage.removeItem(k));
+  } catch (e) {}
+  setMsg('Cache vymazána (' + keys.length + ' položek).', 'ok');
+}
+
+/* ── Rate-limitované API (stejná fronta jako sscr-zpravodaj) ─────── */
+let _chain = Promise.resolve();
+let _apiTs = 0;
+let _blockUntil = 0;
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+function apiGet(path, label, quiet, force) {
+  label = label || path;
+  if (!force) {
+    const hit = getCached(path);
+    if (hit !== null) return Promise.resolve(hit);
+  }
+  const run = async function() {
+    if (!force) { const hit = getCached(path); if (hit !== null) return hit; }
+    if (Date.now() < _blockUntil) {
+      const min = Math.ceil((_blockUntil - Date.now()) / 60000);
+      throw new Error('API je dočasně blokováno (rate-limit) — zkuste to za ' + min + ' min.');
+    }
+    const wait = Math.max(0, _apiTs + API_INTERVAL - Date.now());
+    if (wait > 0) await sleep(wait);
+    if (!quiet) setMsg('Načítám: ' + label + '…');
+    _apiTs = Date.now();
+    let r;
+    try {
+      r = await fetch(API + path);
+    } catch (e) {
+      _blockUntil = Date.now() + BLOCK_MS;
+      throw new Error('Síťová chyba / timeout — API zablokováno na 10 min (' + label + ').');
+    }
+    if (r.status === 429) {
+      _blockUntil = Date.now() + BLOCK_MS;
+      throw new Error('Rate-limit (429) — pauza 10 min.');
+    }
+    if (!r.ok) {
+      const err = new Error('HTTP ' + r.status + ' — ' + label);
+      err.status = r.status;
+      throw err;
+    }
+    const data = await r.json();
+    setCache(path, data);
+    return data;
+  };
+  const p = _chain.then(run, run);
+  _chain = p.then(function() {}, function() {});
+  return p;
+}
+
+/* ── Pomocné funkce ─────────────────────────────────────────────── */
+function setMsg(html, cls, target) {
+  document.getElementById(target || 'msg').innerHTML =
+    cls ? '<span class="' + cls + '">' + html + '</span>' : '<span>' + html + '</span>';
+}
+function norm(d) { return Array.isArray(d) ? d : (d ? [d] : []); }
+function sum(arr) { return arr.reduce(function(a, b) { return a + b; }, 0); }
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function todayCz(d) {
+  d = d || new Date();
+  return d.getDate() + '. ' + (d.getMonth() + 1) + '. ' + d.getFullYear();
+}
+// "Jukl Karel" → "Karel Jukl" (jen u dvouslovných)
+function vedouciName(s) {
+  if (!s) return '';
+  const p = s.trim().split(/\s+/);
+  return p.length === 2 ? p[1] + ' ' + p[0] : s.trim();
+}
+function seasonText(y) { return y != null ? y + '/' + (+y + 1) : ''; }
+function compUrl(compId) { return 'https://www.chess.cz/soutez/' + compId + '/'; }
+
+/* ── Soupiska ───────────────────────────────────────────────────── */
+/* Příznaky z API („ H K Z“) → { z: je v základu, typ: ostatní „H,K“ } */
+function splitFlags(s) {
+  const t = String(s || '').trim().split(/\s+/).filter(Boolean);
+  return { z: t.indexOf('Z') >= 0, typ: t.filter(function(x) { return x !== 'Z'; }).join(',') };
+}
+/* Odpověď /team/{id}/roster → hráči soupisky */
+function parseRoster(json) {
+  return norm(json).map(function(p, i) {
+    const f = splitFlags(p.playerFlags);
+    return {
+      pos: p.rosterPosition != null ? p.rosterPosition : i + 1,
+      id: p.playerId, name: String(p.playerName || '').trim(),
+      nrtg: p.playerCzeElo || 0, irtg: p.playerFideElo || 0,
+      z: f.z, typ: f.typ, suffix: '',
+    };
+  }).sort(function(a, b) { return a.pos - b.pos; });
+}
+/* Skupiny stejných jmen v soupisce → [[hráč, hráč], …] */
+function duplicateGroups(roster) {
+  const by = {};
+  roster.forEach(function(p) { (by[p.name.toLowerCase()] = by[p.name.toLowerCase()] || []).push(p); });
+  return Object.keys(by).map(function(k) { return by[k]; }).filter(function(g) { return g.length > 1; });
+}
+/* Přípony st./ml. podle roku narození (births: id → rok).
+   Jen dvojice s různým rokem; jinak null (nelze rozlišit). */
+function dupSuffixes(group, births) {
+  if (group.length !== 2) return null;
+  const a = births[group[0].id], b = births[group[1].id];
+  if (!a || !b || a === b) return null;
+  const out = {};
+  out[group[0].id] = a < b ? 'st.' : 'ml.';
+  out[group[1].id] = a < b ? 'ml.' : 'st.';
+  return out;
+}
+function displayName(p) { return p.name + (p.suffix ? ' ' + p.suffix : ''); }
+
+/* ── Startovní čísla ───────────────────────────────────────────────
+   API je výslovně nevrací. Družstva se importují ze Swiss-Manageru
+   v pořadí startovních čísel → teamId vzestupně. Ověří se Bergerovým
+   schématem 1. kola: dvojice i a N+1−i (N = počet zaokrouhlený na sudý). */
+function bergerOk(round1, stcOf, n) {
+  const N = n + (n % 2);
+  const ms = norm(round1 && round1.matches);
+  if (!ms.length) return false;
+  return ms.every(function(m) {
+    const a = stcOf[m.homeId], b = stcOf[m.awayId];
+    return a != null && b != null && a + b === N + 1;
+  });
+}
+function assignStartNumbers(teams, rounds) {
+  const r1 = rounds.filter(function(r) { return r.nr === 1; })[0];
+  function mapOf(list) { const o = {}; list.forEach(function(t, i) { o[t.id] = i + 1; }); return o; }
+  const byId = teams.slice().sort(function(a, b) { return a.id - b.id; });
+  const byRank = teams.slice().sort(function(a, b) { return (a.rank || 0) - (b.rank || 0); });
+  let pick = byId, ok = bergerOk(r1, mapOf(byId), teams.length), source = 'teamId';
+  if (!ok && bergerOk(r1, mapOf(byRank), teams.length)) { pick = byRank; ok = true; source = 'tabulka'; }
+  const stc = mapOf(pick);
+  return { teams: pick.map(function(t) { return Object.assign({}, t, { stc: stc[t.id] }); }), ok: ok, source: source };
+}
+
+/* ── Rozlosování ────────────────────────────────────────────────── */
+function parseRounds(json) {
+  return norm(json).filter(function(r) { return r && r.roundNr != null; })
+    .map(function(r) {
+      return {
+        nr: +r.roundNr, date: String(r.roundDate || '').trim(),
+        matches: norm(r.roundMatches).map(function(m) {
+          return { homeId: m.homeTeamId, awayId: m.awayTeamId,
+                   homeName: m.homeTeamName || '', awayName: m.awayTeamName || '' };
+        }),
+      };
+    })
+    .sort(function(a, b) { return a.nr - b.nr; });
+}
+/* „9:00“ / „09:00“ → „9:00“ (bez úvodní nuly); prázdné → '' */
+function fmtTime(t) {
+  const m = /^\s*(\d{1,2}):(\d{2})/.exec(t || '');
+  return m ? (+m[1]) + ':' + m[2] : '';
+}
+const CONFLICT = '???';
+/* Čas připsaný k domácímu družstvu: '' = výchozí, jinak čas nebo ??? (konflikt).
+   home = požadavek domácích (doma), away = požadavek hostů (venku). */
+function matchTime(home, away, defTime) {
+  const h = fmtTime(home), a = fmtTime(away), d = fmtTime(defTime);
+  if (h && a && h !== a) return CONFLICT;
+  const t = h || a;
+  return t && t !== d ? t : '';
+}
+function defaultLastNote(defTime) {
+  return 'poslední kolo, všechna utkání musí začínat v ' + fmtTime(defTime);
+}
+/* Záhlaví kola: „Kolo 1 dne 18.10.2026 v 10:00 hodin[, pokud není uvedeno jinak][ (poznámka)]“ */
+function roundHeader(r, defTime, anySpecial, note) {
+  return 'Kolo ' + r.nr + ' dne ' + r.date + ' v ' + fmtTime(defTime) + ' hodin'
+       + (anySpecial ? ', pokud není uvedeno jinak' : '')
+       + (note ? ' (' + note + ')' : '');
+}
+
+/* Rozlosování připravené k vykreslení (sdílí náhled i DOCX).
+   cfg: { defTime, home{id:čas}, away{id:čas}, lastUniform, lastNote (null = výchozí), refs{"k.z":jméno} } */
+function scheduleView(d, cfg) {
+  const lastNr = d.rounds.length ? d.rounds[d.rounds.length - 1].nr : null;
+  const stcOf = {}; d.teams.forEach(function(t) { stcOf[t.id] = t.stc; });
+  const conflicts = [], suppressed = [];
+  const rounds = d.rounds.map(function(r) {
+    const isLast = r.nr === lastNr;
+    let anySpecial = false;
+    const rows = r.matches.map(function(m, i) {
+      let time = matchTime(cfg.home[m.homeId], cfg.away[m.awayId], cfg.defTime);
+      const label = r.nr + '.' + (i + 1) + ' ' + m.homeName + ' – ' + m.awayName;
+      if (time && isLast && cfg.lastUniform) { suppressed.push(label + ' (' + time + ')'); time = ''; }
+      if (time === CONFLICT) conflicts.push(label);
+      if (time) anySpecial = true;
+      return {
+        nr: i + 1, key: r.nr + '.' + (i + 1),
+        homeStc: stcOf[m.homeId] != null ? stcOf[m.homeId] : '', homeName: m.homeName, time: time,
+        awayStc: stcOf[m.awayId] != null ? stcOf[m.awayId] : '', awayName: m.awayName,
+        ref: refShort(cfg.refs[r.nr + '.' + (i + 1)]),
+      };
+    });
+    const note = isLast && cfg.lastUniform
+      ? (cfg.lastNote == null ? defaultLastNote(cfg.defTime) : cfg.lastNote.trim()) : '';
+    return { nr: r.nr, header: roundHeader(r, cfg.defTime, anySpecial, note), rows: rows };
+  });
+  return { rounds: rounds, conflicts: conflicts, suppressed: suppressed };
+}
+/* Sloupce rozlosování (DXA): úzké pevné sloupce, rozhodčí pevně (jméno
+   zkrácené na „Příjmení J.“), družstva si rozdělí zbytek šířky sazby. */
+function schedCols(withRef) {
+  const fixed = COL_NR + 2 * COL_STC + COL_RES + (withRef ? COL_REF : 0);
+  const name = Math.floor((CONTENT - fixed) / 2);
+  const cols = [COL_NR, COL_STC, name, COL_RES, name, COL_STC];
+  if (withRef) cols.push(CONTENT - fixed - 2 * name + COL_REF);
+  return cols;
+}
+/* Rozhodčí: „Burda Roman“ → „Burda R.“ — první slovo je příjmení, další
+   slova (křestní jména) jen počáteční písmeno s tečkou; slova končící tečkou
+   (st., ml., už zkrácené R.) zůstanou. */
+function refShort(s) {
+  const w = String(s || '').replace(/\s+/g, ' ').trim().split(' ').filter(Boolean);
+  if (w.length < 2) return w.join('');
+  return [w[0]].concat(w.slice(1).map(function(x) {
+    return /\.$/.test(x) ? x : x.charAt(0).toUpperCase() + '.';
+  })).join(' ');
+}
+
+/* Kapitola Specifické požadavky: seznam jiných začátků (prázdné = žádné) */
+function requirementLines(d, cfg) {
+  const out = [];
+  d.teams.forEach(function(t) {
+    const h = fmtTime(cfg.home[t.id]), a = fmtTime(cfg.away[t.id]);
+    if (h) out.push(t.name + ' — domácí utkání v ' + h + ' hodin');
+    if (a) out.push(t.name + ' — utkání venku v ' + a + ' hodin');
+  });
+  if (!out.length) return [];
+  return ['Jiné začátky utkání (výchozí začátek je v ' + fmtTime(cfg.defTime) + ' hodin):']
+    .concat(out.map(function(s) { return '• ' + s; }));
+}
+
+/* ── Název souboru ──────────────────────────────────────────────── */
+function abbrev(compName) {
+  if (!compName) return 'soutez';
+  const s = compName.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const letters = s.split(/[\s/]+/)
+    .map(function(w) { const m = w.match(/[a-zA-Z0-9]/); return m ? m[0] : ''; })
+    .filter(Boolean).join('');
+  return (letters || 'soutez').toLowerCase();
+}
+function suggestFname(compName, startYear) {
+  const yy = function(n) { return ('0' + (n % 100)).slice(-2); };
+  const y = startYear != null ? +startYear : currentSeasonStart();
+  return abbrev(compName) + '_' + yy(y) + '_' + yy(y + 1) + '_uz';
+}
+function resolveFname(name) {
+  const f = String(name || 'uvodni_zpravodaj').trim().replace(/[\\/:*?"<>|]+/g, '_') || 'uvodni_zpravodaj';
+  return f.replace(/\.docx$/i, '') + '.docx';
+}
+
+/* ── Stav ─────────────────────────────────────────────────────────
+   _data = načtená soutěž; _cfg = nastavení (pamatuje se pro soutěž). */
+let _data = null;
+let _cfg  = null;
+const CFG_PREFIX = 'uzcfg_';   // jiný prefix než cache → „Vymazat cache“ ho nesmaže
+
+function defaultCfg() {
+  return { defTime: '10:00', home: {}, away: {}, lastUniform: true, lastNote: null, withRef: true, refs: {} };
+}
+function loadCfg(compId) {
+  let c = null;
+  try { c = JSON.parse(localStorage.getItem(CFG_PREFIX + compId)); } catch (e) {}
+  return Object.assign(defaultCfg(), c || {});
+}
+function saveCfg() {
+  if (!_data) return;
+  try { localStorage.setItem(CFG_PREFIX + _data.compId, JSON.stringify(_cfg)); } catch (e) {}
+}
+
+/* ── Načtení dat ─────────────────────────────────────────────────── */
+async function loadData() {
+  const compId = document.getElementById('compId').value.trim();
+  if (!compId) { setMsg('Vyberte soutěž.', 'err'); return; }
+  const btn = document.getElementById('btn-load');
+  btn.disabled = true;
+  try {
+    const details = await apiGet('/competitions/' + compId + '/details', 'detaily soutěže');
+    const rounds  = parseRounds(await apiGet('/competitions/' + compId + '/schedule', 'rozlosování'));
+    const table   = norm(await apiGet('/competitions/' + compId + '/table', 'seznam družstev'));
+    if (!table.length) throw new Error('Soutěž nemá družstva.');
+    if (!rounds.length) throw new Error('Soutěž nemá rozlosování.');
+    let season = null;
+    try { season = await findCompSeason(compId); } catch (e) {}
+
+    const warnings = [];
+    const sn = assignStartNumbers(table.map(function(t) {
+      return { id: t.teamId, name: t.teamName || '', rank: +t.teamRank || 0 };
+    }), rounds);
+    if (!sn.ok) warnings.push('Startovní čísla nejdou ověřit Bergerovým schématem 1. kola — použito pořadí podle ID družstev. Zkontrolujte sloupce St.č.');
+
+    const teams = sn.teams;
+    for (let i = 0; i < teams.length; i++) {
+      const t = teams[i];
+      t.roster = parseRoster(await apiGet('/competitions/' + compId + '/team/' + t.id + '/roster',
+                                          'soupiska ' + (i + 1) + '/' + teams.length + ' — ' + t.name));
+      // shodná jména v soupisce → st./ml. podle roku narození
+      for (const g of duplicateGroups(t.roster)) {
+        const births = {};
+        for (const p of g) {
+          try {
+            const m = await apiGet('/members/' + p.id + '/cze', 'hráč ' + p.name);
+            births[p.id] = +(norm(m)[0] || {}).birthYear || 0;
+          } catch (e) {}
+        }
+        const suf = dupSuffixes(g, births);
+        if (suf) g.forEach(function(p) { p.suffix = suf[p.id]; });
+        else warnings.push(t.name + ': hráč „' + g[0].name + '“ je na soupisce ' + g.length + '×, st./ml. nejde podle roku narození rozlišit.');
+      }
+    }
+
+    _data = {
+      compId: compId, season: season,
+      compName: details.compName || ('Soutěž ' + compId),
+      regionName: details.regionName || '',
+      www: details.compWww || '',
+      manager: { name: vedouciName(details.compManagerName), email: details.compManagerEmail || '',
+                 phone: details.compManagerPhone || '' },
+      teams: teams, rounds: rounds, warnings: warnings, dateStr: todayCz(),
+    };
+    _cfg = loadCfg(compId);
+    renderSettings();
+    renderPreview();
+    if (!_fnameTouched) document.getElementById('fname').value = suggestFname(_data.compName, season);
+    updateFnamePreview();
+    ['sec-settings', 'sec-preview', 'sec-download'].forEach(function(id) {
+      document.getElementById(id).classList.remove('hidden');
+    });
+    setMsg('✓ Načteno: ' + teams.length + ' družstev, ' + rounds.length + ' kol.', 'ok');
+    document.getElementById('sec-settings').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch (e) {
+    setMsg('Chyba: ' + esc(e.message), 'err');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── Nastavení (karta 2) ─────────────────────────────────────────── */
+function renderSettings() {
+  document.getElementById('defTime').value = _cfg.defTime;
+  document.getElementById('lastUniform').checked = !!_cfg.lastUniform;
+  document.getElementById('lastNoteWrap').classList.toggle('hidden', !_cfg.lastUniform);
+  document.getElementById('lastNote').value = _cfg.lastNote == null ? defaultLastNote(_cfg.defTime) : _cfg.lastNote;
+  [].forEach.call(document.querySelectorAll('#refSeg button'), function(x) {
+    x.classList.toggle('on', (x.dataset.v === '1') === !!_cfg.withRef);
+  });
+  let h = '<thead><tr><th>St.č.</th><th>Družstvo</th><th>Doma</th><th>Venku</th></tr></thead><tbody>';
+  _data.teams.forEach(function(t) {
+    h += '<tr><td class="n">' + t.stc + '</td><td>' + esc(t.name) + '</td>'
+       + '<td class="t"><input type="time" class="time-in" data-side="home" data-id="' + t.id + '"></td>'
+       + '<td class="t"><input type="time" class="time-in" data-side="away" data-id="' + t.id + '"></td></tr>';
+  });
+  document.getElementById('teamsTbl').innerHTML = h + '</tbody>';
+  [].forEach.call(document.querySelectorAll('#teamsTbl input'), function(el) {
+    el.addEventListener('change', function() {
+      const side = _cfg[el.dataset.side];
+      // prázdné nebo rovné výchozímu = žádná výjimka (pole se vrátí na zašedlý výchozí čas)
+      if (el.value && fmtTime(el.value) !== fmtTime(_cfg.defTime)) side[el.dataset.id] = el.value;
+      else delete side[el.dataset.id];
+      syncTeamTimes(); saveCfg(); renderPreview();
+    });
+  });
+  syncTeamTimes();
+}
+/* „9:00“ → „09:00“ (hodnota pro <input type=time>) */
+function inputTime(t) {
+  const f = fmtTime(t);
+  return f ? ('0' + f).slice(-5) : '';
+}
+/* Pole časů družstev: výjimka = vlastní čas, jinak zašedlý výchozí začátek.
+   Výjimky rovné (novému) výchozímu začátku se zruší. */
+function syncTeamTimes() {
+  [].forEach.call(document.querySelectorAll('#teamsTbl input'), function(el) {
+    const side = _cfg[el.dataset.side], id = el.dataset.id;
+    if (side[id] && fmtTime(side[id]) === fmtTime(_cfg.defTime)) delete side[id];
+    el.value = inputTime(side[id] || _cfg.defTime);
+    el.classList.toggle('dflt', !side[id]);
+  });
+}
+
+/* ── HTML náhled ─────────────────────────────────────────────────── */
+function px(dxa) { return (dxa / 15).toFixed(2) + 'px'; }
+function colgroup(ws) {
+  return '<colgroup>' + ws.map(function(w) { return '<col style="width:' + px(w) + '">'; }).join('') + '</colgroup>';
+}
+
+/* Soupisky po dvojicích (vedle sebe); lichá poslední zůstane vlevo sama. */
+function rosterPairs(teams) {
+  const out = [];
+  for (let i = 0; i < teams.length; i += 2) out.push(teams.slice(i, i + 2));
+  return out;
+}
+function rosterHtml(t, rw) {
+  let h = '<table style="width:' + rw + '">' + colgroup(ROSTER_COLS) + '<tbody>'
+     + '<tr class="tn"><td colspan="6">' + t.stc + '&nbsp;&nbsp;' + esc(t.name) + '</td></tr>'
+     + '<tr class="sh">' + ROSTER_HDRS.map(function(x, i) { return '<td class="' + (i === 1 || i === 5 ? '' : 'c') + '">' + x + '</td>'; }).join('') + '</tr>';
+  t.roster.forEach(function(p) {
+    h += '<tr><td class="c">' + p.pos + '</td><td>' + esc(displayName(p)) + '</td>'
+       + '<td class="c">' + p.nrtg + '</td><td class="c">' + p.irtg + '</td>'
+       + '<td class="c">' + (p.z ? Z_MARK : '') + '</td><td>' + esc(p.typ) + '</td></tr>';
+  });
+  return h + '</tbody></table>';
+}
+
+function previewHtml(d, cfg) {
+  const sv = scheduleView(d, cfg);
+  const warns = d.warnings.slice();
+  if (sv.conflicts.length) warns.push('Konflikt začátků (???): ' + sv.conflicts.join('; '));
+  if (sv.suppressed.length) warns.push('V posledním kole se neuplatní jiný začátek: ' + sv.suppressed.join('; '));
+  let h = '';
+  if (warns.length) h += '<div class="fit-warn">⚠ Upozornění:<ul>' + warns.map(function(w) { return '<li>' + esc(w) + '</li>'; }).join('') + '</ul></div>';
+  h += '<div class="doc">';
+  h += '<div class="doc-hdr">' + esc([d.regionName, d.compName, seasonText(d.season)].filter(Boolean).join(' - ')) + '</div>';
+  h += '<div class="d-title">' + esc(d.compName) + '</div>';
+  if (d.regionName) h += '<div class="d-sub">' + esc(d.regionName) + '</div>';
+  h += '<div class="d-sub">Úvodní zpravodaj' + (d.season != null ? ' – ročník ' + esc(seasonText(d.season)) : '') + '</div>';
+  h += '<div class="d-sub">' + esc(d.dateStr) + '</div>';
+  h += '<div class="d-p" style="margin-top:16px">Ve skupině startuje ' + d.teams.length + ' družstev.</div>';
+
+  function chap(i) { return '<div class="d-h">' + (i + 1) + '. ' + esc(CHAPTERS[i]) + '</div>'; }
+  const emptyP = '<div class="d-p empty">(doplňte ve Wordu)</div>';
+
+  h += chap(0) + emptyP + chap(1) + emptyP;
+
+  // Soupisky
+  h += chap(2);
+  const rw = px(sum(ROSTER_COLS));
+  rosterPairs(d.teams).forEach(function(pair) {
+    h += '<div class="pair" style="gap:' + px(ROSTER_GAP) + '">';
+    pair.forEach(function(t) { h += rosterHtml(t, rw); });
+    h += '</div>';
+  });
+
+  // Rozlosování
+  h += chap(3);
+  const sc = schedCols(cfg.withRef), ncol = sc.length;
+  sv.rounds.forEach(function(r) {
+    h += '<table style="width:' + px(sum(sc)) + '">' + colgroup(sc) + '<tbody>'
+       + '<tr class="rh"><td colspan="' + ncol + '">' + esc(r.header) + '</td></tr>'
+       + '<tr class="sh">' + SCHED_HDRS.slice(0, ncol).map(function(x, i) {
+           return '<td class="' + (i === 2 || i === 4 || i === 6 ? '' : 'c') + '">' + x + '</td>'; }).join('') + '</tr>';
+    r.rows.forEach(function(m) {
+      h += '<tr><td class="c">' + m.nr + '</td><td class="c">' + m.homeStc + '</td>'
+         + '<td>' + esc(m.homeName) + (m.time ? ' <span class="tm">' + esc(m.time) + (m.time === CONFLICT ? '' : ' hodin') + '</span>' : '') + '</td>'
+         + '<td class="c">-</td><td>' + esc(m.awayName) + '</td><td class="c">' + m.awayStc + '</td>'
+         + (cfg.withRef ? '<td><span class="ed" contenteditable="plaintext-only" spellcheck="false" data-ref="' + m.key + '">' + esc(m.ref) + '</span></td>' : '')
+         + '</tr>';
+    });
+    h += '</tbody></table>';
+  });
+
+  // Specifické požadavky
+  h += chap(4);
+  const req = requirementLines(d, cfg);
+  h += req.length ? req.map(function(s) { return '<div class="d-p">' + esc(s) + '</div>'; }).join('') : emptyP;
+
+  h += chap(5) + emptyP + chap(6) + emptyP;
+
+  // Stránky soutěže
+  h += chap(7);
+  h += '<div class="d-p">Šachový svaz: <a href="' + esc(compUrl(d.compId)) + '" target="_blank" rel="noopener">' + esc(compUrl(d.compId)) + '</a></div>';
+  if (d.www) h += '<div class="d-p">Chess-results: <a href="' + esc(d.www) + '" target="_blank" rel="noopener">' + esc(d.www) + '</a></div>';
+
+  h += chap(8) + emptyP;
+  if (d.manager.name) {
+    h += '<div class="d-p" style="margin-top:16px">' + esc(d.manager.name)
+       + (d.manager.email ? '<br>' + esc(d.manager.email) : '')
+       + (d.manager.phone ? '<br>tel: ' + esc(d.manager.phone) : '') + '</div>';
+  }
+  return h + '</div>';
+}
+
+function renderPreview() {
+  if (!_data) return;
+  const box = document.getElementById('preview');
+  box.innerHTML = previewHtml(_data, _cfg);
+  const eds = [].slice.call(box.querySelectorAll('[data-ref]'));
+  eds.forEach(function(el, i) {
+    el.addEventListener('input', function() {
+      const v = el.innerText.replace(/\s+/g, ' ').trim();
+      if (v) _cfg.refs[el.dataset.ref] = v; else delete _cfg.refs[el.dataset.ref];
+      saveCfg();
+    });
+    // po opuštění pole ukaž jméno tak, jak bude v DOCX („Burda R.“)
+    el.addEventListener('blur', function() { el.innerText = refShort(el.innerText); });
+    // jméno je jednořádkové: Enter = další rozhodčí
+    el.addEventListener('keydown', function(e) {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+      if (eds[i + 1]) eds[i + 1].focus(); else el.blur();
+    });
+  });
+}
+
+/* ── Sestavení DOCX ──────────────────────────────────────────────────
+   Písmo a velikosti jsou jen ve stylech dokumentu (docDefaults, Title,
+   Subtitle, Heading1) — jednotlivé texty je neopakují, takže změna stylu
+   ve Wordu změní celý dokument. */
+function run(text, opts) {
+  opts = opts || {};
+  return new docx.TextRun({ text: String(text != null ? text : ''), bold: opts.bold || undefined, size: opts.size });
+}
+function cell(content, opts) {
+  opts = opts || {};
+  const runs = Array.isArray(content) ? content : [run(content, { bold: opts.bold, size: opts.size })];
+  return new docx.TableCell({
+    width:         { size: opts.w || 1000, type: 'dxa' },
+    columnSpan:    opts.span || 1,
+    verticalAlign: 'center',
+    shading:       { fill: opts.bg || C_WHITE, type: 'clear' },
+    borders:       opts.borders || (opts.noBorder ? B_NONE : B_ALL),
+    margins:       { top: 20, bottom: 20, left: CELL_PAD, right: CELL_PAD },
+    children: [new docx.Paragraph({
+      alignment: opts.align || 'left',
+      keepNext:  opts.keepNext || false,   // drží řádek s dalším → tabulka se nerozdělí
+      keepLines: true,
+      spacing:   { before: 0, after: 0 },
+      children:  runs,
+    })],
+  });
+}
+function row(cells) { return new docx.TableRow({ cantSplit: true, children: cells }); }
+function table(cols, rows) {
+  return new docx.Table({ width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows });
+}
+function para(children, opts) {
+  opts = opts || {};
+  return new docx.Paragraph({
+    alignment: opts.align, style: opts.style, heading: opts.heading, numbering: opts.numbering,
+    spacing: opts.spacing || { before: 0, after: 120 },
+    keepNext: opts.keepNext,
+    children: typeof children === 'string' ? [run(children)] : children,
+  });
+}
+function gap() { return new docx.Paragraph({ spacing: { before: 0, after: 0 }, children: [] }); }
+function link(text, url) {
+  return new docx.ExternalHyperlink({ link: url, children: [new docx.TextRun({ text: text, style: 'Hyperlink' })] });
+}
+function chapter(i) {
+  return para(CHAPTERS[i], { heading: docx.HeadingLevel.HEADING_1, numbering: { reference: 'kap', level: 0 },
+                             spacing: { before: 240, after: 120 }, keepNext: true });
+}
+
+/* Dvojice soupisek vedle sebe jako jedna plochá tabulka:
+   6 sloupců levé soupisky | mezera bez čar | 6 sloupců pravé.
+   (Vnořené tabulky LibreOffice stránkuje špatně — každou dvojici na novou stranu.)
+   Nad tabulkou číslo a název družstva (12 pt, bez podbarvení a hran).
+   Hrany jsou všude výslovně (ne přes řešení konfliktů sousedních buněk,
+   které prohlížeče vykreslují různě): pod kratší soupiskou prázdné buňky bez
+   hran, jen první z nich má horní hranu = spodní hrana posledního hráče;
+   mezera mezi soupiskami nemá horní ani spodní hranu, boční jen vedle soupisky.
+   Všechny řádky kromě posledního drží keepNext → dvojice se nerozdělí. */
+function rosterFilled(t, ri) { return !!t && ri < t.roster.length + 2; }
+function rosterHalf(t, ri, kn) {
+  const cw = ROSTER_COLS;
+  if (!rosterFilled(t, ri)) {
+    const under = !!t && ri === t.roster.length + 2;   // hned pod posledním hráčem
+    return [cell('', { w: sum(cw), span: 6, keepNext: kn,
+                       borders: { top: under ? B_S : B_N, bottom: B_N, left: B_N, right: B_N } })];
+  }
+  // číslo a název družstva: 12 pt, bez podbarvení a bez hran nahoře a po stranách
+  if (ri === 0) return [
+    cell(t.stc + '  ' + t.name, { w: sum(cw), span: 6, bold: true, size: 24, keepNext: kn,
+                                  borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } }),
+  ];
+  if (ri === 1) return ROSTER_HDRS.map(function(x, i) {
+    return cell(x, { w: cw[i], bold: true, bg: C_SUB, align: i === 1 || i === 5 ? 'left' : 'center', keepNext: kn });
+  });
+  const p = t.roster[ri - 2];
+  return [
+    cell(p.pos, { w: cw[0], align: 'center', keepNext: kn }),
+    cell(displayName(p), { w: cw[1], keepNext: kn }),
+    cell(p.nrtg, { w: cw[2], align: 'center', keepNext: kn }),
+    cell(p.irtg, { w: cw[3], align: 'center', keepNext: kn }),
+    cell(p.z ? Z_MARK : '', { w: cw[4], align: 'center', keepNext: kn }),
+    cell(p.typ, { w: cw[5], keepNext: kn }),
+  ];
+}
+function rosterPair(pair) {
+  const cols = ROSTER_COLS.concat([ROSTER_GAP], ROSTER_COLS);
+  const n = 2 + Math.max(pair[0].roster.length, pair[1] ? pair[1].roster.length : 0);
+  const rows = [];
+  for (let ri = 0; ri < n; ri++) {
+    const kn = ri < n - 1;
+    rows.push(row(rosterHalf(pair[0], ri, kn)
+      .concat([cell('', { w: ROSTER_GAP, keepNext: kn, borders: {
+        top: B_N, bottom: B_N,
+        left: ri > 0 && rosterFilled(pair[0], ri) ? B_S : B_N, right: ri > 0 && rosterFilled(pair[1], ri) ? B_S : B_N } })],
+        rosterHalf(pair[1], ri, kn))));
+  }
+  return new docx.Table({
+    width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows,
+    borders: { top: B_N, bottom: B_N, left: B_N, right: B_N, insideHorizontal: B_N, insideVertical: B_N },
+  });
+}
+
+function roundTable(r, withRef, cw) {
+  const nc = cw.length, n = r.rows.length;
+  const rows = [
+    // záhlaví kola: bez podbarvení a bez hran nahoře a po stranách (jen spodní = horní hrana tabulky)
+    row([cell(r.header, { w: sum(cw), span: nc, bold: true, keepNext: true,
+                          borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } })]),
+    row(SCHED_HDRS.slice(0, nc).map(function(x, i) {
+      return cell(x, { w: cw[i], bold: true, bg: C_SUB, align: i === 2 || i === 4 || i === 6 ? 'left' : 'center', keepNext: n > 0 });
+    })),
+  ];
+  r.rows.forEach(function(m, i) {
+    const kn = i < n - 1;
+    const home = [run(m.homeName)];
+    if (m.time) home.push(new docx.TextRun({ text: ' ' + m.time + (m.time === CONFLICT ? '' : ' hodin'), bold: true, color: C_TIME }));
+    const cells = [
+      cell(m.nr, { w: cw[0], align: 'center', keepNext: kn }),
+      cell(m.homeStc, { w: cw[1], align: 'center', keepNext: kn }),
+      cell(home, { w: cw[2], keepNext: kn }),
+      cell('-', { w: cw[3], align: 'center', keepNext: kn }),
+      cell(m.awayName, { w: cw[4], keepNext: kn }),
+      cell(m.awayStc, { w: cw[5], align: 'center', keepNext: kn }),
+    ];
+    if (withRef) cells.push(cell(m.ref, { w: cw[6], keepNext: kn }));
+    rows.push(row(cells));
+  });
+  return table(cw, rows);
+}
+
+function buildDocx(d, cfg) {
+  const sv = scheduleView(d, cfg);
+  const ch = [];
+  ch.push(para(d.compName, { heading: docx.HeadingLevel.TITLE, spacing: { before: 0, after: 120 } }));
+  if (d.regionName) ch.push(para(d.regionName, { style: 'Subtitle' }));
+  ch.push(para('Úvodní zpravodaj' + (d.season != null ? ' – ročník ' + seasonText(d.season) : ''), { style: 'Subtitle' }));
+  ch.push(para(d.dateStr, { style: 'Subtitle' }));
+  ch.push(para('Ve skupině startuje ' + d.teams.length + ' družstev.', { spacing: { before: 240, after: 120 } }));
+
+  ch.push(chapter(0), gap(), chapter(1), gap());
+
+  ch.push(chapter(2));
+  rosterPairs(d.teams).forEach(function(pair) { ch.push(rosterPair(pair), gap()); });
+
+  ch.push(chapter(3));
+  sv.rounds.forEach(function(r, i) {
+    ch.push(roundTable(r, cfg.withRef, schedCols(cfg.withRef)));
+    if (i < sv.rounds.length - 1) ch.push(gap());
+  });
+
+  ch.push(chapter(4));
+  const req = requirementLines(d, cfg);
+  if (req.length) req.forEach(function(s) { ch.push(para(s, { spacing: { before: 0, after: 60 } })); });
+  else ch.push(gap());
+
+  ch.push(chapter(5), gap(), chapter(6), gap());
+
+  ch.push(chapter(7));
+  ch.push(para([run('Šachový svaz: '), link(compUrl(d.compId), compUrl(d.compId))]));
+  if (d.www) ch.push(para([run('Chess-results: '), link(d.www, d.www)]));
+
+  ch.push(chapter(8), gap());
+  if (d.manager.name) {
+    const sig = [run(d.manager.name)];
+    if (d.manager.email) sig.push(new docx.TextRun({ text: '', break: 1 }), link(d.manager.email, 'mailto:' + d.manager.email));
+    if (d.manager.phone) sig.push(new docx.TextRun({ text: 'tel: ' + d.manager.phone, break: 1 }));
+    ch.push(para(sig, { spacing: { before: 240, after: 0 } }));
+  }
+
+  const header = new docx.Header({ children: [new docx.Paragraph({
+    alignment: 'right', spacing: { before: 0, after: 0 },
+    children: [new docx.TextRun({ text: [d.regionName, d.compName, seasonText(d.season)].filter(Boolean).join(' - '), size: 18 })],
+  })] });
+  const footer = new docx.Footer({ children: [new docx.Paragraph({
+    alignment: 'center', spacing: { before: 0, after: 0 },
+    children: [new docx.TextRun({ size: 18, children: ['Strana ', docx.PageNumber.CURRENT, ' z ', docx.PageNumber.TOTAL_PAGES] })],
+  })] });
+
+  return new docx.Document({
+    creator: d.manager.name || undefined,
+    title: d.compName + ' – úvodní zpravodaj',
+    styles: {
+      default: {
+        document: { run: { font: FONT, size: FS }, paragraph: { spacing: { before: 0, after: 0 } } },
+        title:    { run: { font: FONT, size: 40, bold: true, color: '000000' },
+                    paragraph: { alignment: 'center', spacing: { before: 0, after: 120 } } },
+        heading1: { run: { font: FONT, size: 28, bold: true, color: '000000' },
+                    paragraph: { spacing: { before: 240, after: 120 }, keepNext: true } },
+        hyperlink: { run: { color: '0563C1', underline: { type: 'single' } } },
+      },
+      paragraphStyles: [{
+        id: 'Subtitle', name: 'Subtitle', basedOn: 'Normal', next: 'Normal', quickFormat: true,
+        run: { font: FONT, size: 28 },
+        paragraph: { alignment: 'center', spacing: { before: 60, after: 60 } },
+      }],
+    },
+    numbering: { config: [{ reference: 'kap', levels: [{
+      level: 0, format: docx.LevelFormat.DECIMAL, text: '%1.', alignment: 'left',
+      style: { paragraph: { indent: { left: 432, hanging: 432 } } },
+    }] }] },
+    sections: [{
+      headers: { default: header },
+      footers: { default: footer },
+      properties: { page: {
+        size:   { width: PAGE_W, height: PAGE_H },
+        margin: { top: MARGIN_Y, right: MARGIN_X, bottom: MARGIN_Y, left: MARGIN_X,
+                  header: HDR_DIST, footer: HDR_DIST },
+      } },
+      children: ch,
+    }],
+  });
+}
+
+async function downloadDocx() {
+  if (!_data) return;
+  const btn = document.getElementById('btn-dl');
+  btn.disabled = true;
+  try {
+    setMsg('Sestavuji DOCX…', null, 'dlMsg');
+    const blob  = await docx.Packer.toBlob(buildDocx(_data, _cfg));
+    const fname = resolveFname(document.getElementById('fname').value);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; a.click();
+    setTimeout(function() { URL.revokeObjectURL(url); }, 5000);
+    setMsg('✓ Staženo: ' + esc(fname), 'ok', 'dlMsg');
+  } catch (e) {
+    setMsg('Chyba: ' + esc(e.message), 'err', 'dlMsg');
+    console.error(e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+let _fnameTouched = false;
+function updateFnamePreview() {
+  document.getElementById('fnamePreview').textContent = resolveFname(document.getElementById('fname').value);
+}
+
+/* ── Výběr soutěže: Sezóna → Kraj → Soutěž (jako sscr-zpravodaj) ── */
+function stripDiacritics(s) {
+  return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+function fold(s) { return stripDiacritics(s).toLowerCase().trim(); }
+function matchName(text, query) {
+  const t = fold(text), q = fold(query);
+  if (!q) return true;
+  return q.split(/\s+/).every(function(w) { return t.indexOf(w) !== -1; });
+}
+function parseCompetitions(json) {
+  const out = [];
+  Object.keys(json || {}).forEach(function(key) {
+    const r = json[key];
+    if (!r) return;
+    out.push({
+      key: key,
+      regionName: r.regionName || ('Region ' + key),
+      competitions: norm(r.competitions).slice().sort(function(a, b) {
+        return (a.compLevel || 0) - (b.compLevel || 0) || String(a.compName).localeCompare(String(b.compName), 'cs');
+      }),
+    });
+  });
+  out.sort(function(a, b) { return a.regionName.localeCompare(b.regionName, 'cs'); });
+  return out;
+}
+function findRegionOf(regions, compId) {
+  return regions.find(function(r) {
+    return r.competitions.some(function(c) { return String(c.compId) === String(compId); });
+  }) || null;
+}
+/* Sezóna začíná v září; nabízíme aktuální a 3 předchozí. */
+function currentSeasonStart() {
+  const d = new Date();
+  return d.getMonth() < 8 ? d.getFullYear() - 1 : d.getFullYear();
+}
+function seasonItems() {
+  const cur = currentSeasonStart(), out = [];
+  for (let y = cur; y >= cur - 3; y--) out.push({ value: String(y), label: y + '/' + (y + 1) });
+  return out;
+}
+/* Sezóna soutěže (rok zahájení): /details ji nevrací → seznamy soutěží (cache). */
+async function findCompSeason(compId) {
+  const loaded = cSeason ? cSeason.value : '';
+  if (loaded && findRegionOf(_regions, compId)) return +loaded;
+  for (const it of seasonItems()) {
+    if (it.value === loaded) continue;
+    try {
+      const regs = parseCompetitions(await apiGet('/competitions/' + it.value, 'soutěže ' + it.value, true));
+      if (findRegionOf(regs, compId)) return +it.value;
+    } catch (e) { return null; }
+  }
+  return null;
+}
+
+function createCombo(id, cfg) {
+  cfg = cfg || {};
+  const input = document.getElementById(id), drop = document.getElementById(id + 'Drop');
+  const c = {
+    items: [], value: '', label: '',
+    setItems: function(items, placeholder) {
+      c.items = items || []; input.disabled = false; input.placeholder = placeholder || ''; c.reset();
+    },
+    disable: function(placeholder) {
+      c.items = []; input.disabled = true; input.placeholder = placeholder || ''; c.reset();
+    },
+    reset: function() { c.value = ''; c.label = ''; input.value = ''; hide(); },
+    set: function(v) {
+      const it = c.items.find(function(x) { return String(x.value) === String(v); });
+      if (!it) return false;
+      c.value = String(it.value); c.label = it.label; input.value = it.label;
+      return true;
+    },
+  };
+  function hide() { drop.style.display = 'none'; }
+  function render(matches) {
+    if (!matches.length) {
+      drop.innerHTML = '<div class="ac-empty">Žádná shoda.</div>';
+      drop.style.display = 'block';
+      return;
+    }
+    drop.innerHTML = matches.map(function(it, i) {
+      return '<button type="button" class="ac-item" data-i="' + i + '"><span class="nm">' + esc(it.label) + '</span></button>';
+    }).join('');
+    drop.style.display = 'block';
+    [].forEach.call(drop.querySelectorAll('.ac-item'), function(btn) {
+      btn.addEventListener('mousedown', function(e) { e.preventDefault(); });
+      btn.addEventListener('click', function() { pick(matches[+btn.dataset.i]); });
+    });
+  }
+  function pick(it) {
+    if (!it) return;
+    c.value = String(it.value); c.label = it.label; input.value = it.label;
+    hide();
+    if (cfg.onPick) cfg.onPick(it);
+  }
+  function open(query) {
+    if (!c.items.length) { hide(); return; }
+    render(c.items.filter(function(it) { return matchName(it.label, query); }).slice(0, 40));
+  }
+  input.addEventListener('focus', function() { input.select(); open(''); });
+  input.addEventListener('input', function() { open(input.value); });
+  input.addEventListener('blur', function() { setTimeout(function() { hide(); input.value = c.label; }, 150); });
+  return c;
+}
+
+let cSeason, cKraj, cSoutez;   // vytváří se v init (testy běží bez DOM)
+let _regions = [];
+let _loadSeq = 0;
+async function loadCompetitions() {
+  const year = cSeason.value, seq = ++_loadSeq;
+  cKraj.disable('načítám…');
+  cSoutez.disable('— nejprve vyberte kraj —');
+  try {
+    const regs = parseCompetitions(await apiGet('/competitions/' + year, 'soutěže ' + year, true));
+    if (seq !== _loadSeq) return;
+    _regions = regs;
+    cKraj.setItems(_regions.map(function(r) { return { value: r.key, label: r.regionName }; }), 'Začněte psát kraj…');
+    syncCombosFromId();
+  } catch (e) {
+    if (seq !== _loadSeq) return;
+    cKraj.disable('nepodařilo se načíst');
+    setMsg('Soutěže ' + year + ': ' + esc(e.message), 'err');
+  }
+}
+function fillSoutez(reg) {
+  if (!reg) { cSoutez.disable('— nejprve vyberte kraj —'); return; }
+  cSoutez.setItems(reg.competitions.map(function(c) { return { value: String(c.compId), label: c.compName }; }),
+    '— vyberte soutěž —');
+}
+function onKrajPick(it) { fillSoutez(_regions.find(function(r) { return r.key === String(it.value); })); }
+function onSoutezPick(it) {
+  document.getElementById('compId').value = it.value;
+  _lookupId = null;
+  lookupCompName();
+}
+function syncCombosFromId() {
+  if (!cSoutez) return;
+  const compId = document.getElementById('compId').value.trim();
+  const reg = findRegionOf(_regions, compId);
+  if (reg) {
+    if (cKraj.value !== reg.key) { cKraj.set(reg.key); fillSoutez(reg); }
+    cSoutez.set(compId);
+  } else if (cSoutez.value && cSoutez.value !== compId) {
+    cSoutez.reset();
+  }
+}
+
+/* ── Náhled názvu soutěže pod polem ID (debounce, tichý dotaz) ───── */
+let _lookupTimer = null, _lookupId = null;
+function scheduleLookup() { clearTimeout(_lookupTimer); _lookupTimer = setTimeout(lookupCompName, 500); }
+function nameLine(d, compId) {
+  let html = '<b>' + esc(d.compName || ('Soutěž ' + compId)) + '</b>';
+  if (d.regionName) html += '<span class="region">' + esc(d.regionName) + '</span>';
+  return html;
+}
+async function lookupCompName() {
+  const view = document.getElementById('compNameView');
+  const compId = document.getElementById('compId').value.trim();
+  if (!compId) { view.textContent = ''; _lookupId = null; return; }
+  if (compId === _lookupId) return;
+  _lookupId = compId;
+  view.textContent = 'načítám název…';
+  try {
+    const d = await apiGet('/competitions/' + compId + '/details', null, true);
+    if (document.getElementById('compId').value.trim() !== compId) return;
+    view.innerHTML = nameLine(d, compId);
+  } catch (e) {
+    if (document.getElementById('compId').value.trim() === compId)
+      view.innerHTML = '<span class="err">' + (Date.now() < _blockUntil ? esc(e.message) : 'soutěž nenalezena') + '</span>';
+    _lookupId = null;
+  }
+}
+
+/* ── Inicializace ───────────────────────────────────────────────── */
+window.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('compId').addEventListener('input', function() { scheduleLookup(); syncCombosFromId(); });
+  document.getElementById('fname').addEventListener('input', function() { _fnameTouched = true; updateFnamePreview(); });
+
+  document.getElementById('defTime').addEventListener('change', function(e) {
+    if (!_cfg || !e.target.value) return;
+    _cfg.defTime = e.target.value;
+    // výchozí poznámka k poslednímu kolu obsahuje čas → přepiš, jen když ji uživatel neměnil
+    if (_cfg.lastNote == null) document.getElementById('lastNote').value = defaultLastNote(_cfg.defTime);
+    syncTeamTimes(); saveCfg(); renderPreview();
+  });
+  document.getElementById('lastUniform').addEventListener('change', function(e) {
+    if (!_cfg) return;
+    _cfg.lastUniform = e.target.checked;
+    document.getElementById('lastNoteWrap').classList.toggle('hidden', !_cfg.lastUniform);
+    saveCfg(); renderPreview();
+  });
+  document.getElementById('lastNote').addEventListener('input', function(e) {
+    if (!_cfg) return;
+    _cfg.lastNote = e.target.value === defaultLastNote(_cfg.defTime) ? null : e.target.value;
+    saveCfg(); renderPreview();
+  });
+  [].forEach.call(document.querySelectorAll('#refSeg button'), function(b) {
+    b.addEventListener('click', function() {
+      if (!_cfg) return;
+      _cfg.withRef = b.dataset.v === '1';
+      [].forEach.call(document.querySelectorAll('#refSeg button'), function(x) { x.classList.toggle('on', x === b); });
+      saveCfg(); renderPreview();
+    });
+  });
+
+  cSeason = createCombo('season', { onPick: loadCompetitions });
+  cKraj   = createCombo('kraj',   { onPick: onKrajPick });
+  cSoutez = createCombo('soutezSel', { onPick: onSoutezPick });
+  cSeason.setItems(seasonItems(), '— sezóna —');
+  cSeason.set(String(currentSeasonStart()));
+  loadCompetitions();
+});
+</script>
+</body>
+</html>

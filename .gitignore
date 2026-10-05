@@ -1,0 +1,15 @@
+# Referenční podklady a generované ukázky (mimo verzování)
+docs/
+
+# Node (pouze lokální testování generátoru)
+node_modules/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# Cloudflare wrangler
+.wrangler/
