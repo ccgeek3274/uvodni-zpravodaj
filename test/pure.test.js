@@ -18,7 +18,7 @@ vm.runInContext(m[1], ctx);
 
 const { splitFlags, parseRoster, duplicateGroups, dupSuffixes, displayName,
         bergerOk, assignStartNumbers, parseRounds, fmtTime, matchTime, roundHeader, defaultLastNote,
-        scheduleView, schedCols, requirementLines, refShort, calendarMonths, calendarLegend, parseCzDate, abbrev, suggestFname, resolveFname } = ctx;
+        scheduleView, schedCols, requirementLines, refShort, calendarMonths, pairWeeks, parseCzDate, abbrev, suggestFname, resolveFname } = ctx;
 const CONTENT = 11112;  // šířka sazby A4 s okraji 0,7 cm (top-level const není v kontextu)
 const plain = o => JSON.parse(JSON.stringify(o));
 
@@ -167,7 +167,12 @@ test('calendarMonths — měsíce od prvního do posledního kola, týdny po–n
   const rounds = [{ nr: 1, date: '18.10.2026' }, { nr: 2, date: '08.11.2026' }, { nr: 3, date: '10.01.2027' }];
   const ms = calendarMonths(rounds);
   assert.deepEqual(plain(ms.map(m => m.name)), ['Říjen 2026', 'Listopad 2026', 'Prosinec 2026', 'Leden 2027']);
-  ms.forEach(m => { assert.equal(m.weeks.length, 6); m.weeks.forEach(w => assert.equal(w.length, 7)); });
+  ms.forEach(m => m.weeks.forEach(w => assert.equal(w.length, 7)));
+  // jen potřebné týdny: říjen 2026 (čt + 31 dní) 5, listopad (ne + 30) 6, únor 2027 (po + 28) 4
+  assert.deepEqual(plain(ms.map(m => m.weeks.length)), [5, 6, 5, 5]);
+  assert.equal(calendarMonths([{ nr: 1, date: '07.02.2027' }])[0].weeks.length, 4);
+  assert.equal(pairWeeks([ms[0], ms[1]]), 6);
+  assert.equal(pairWeeks([ms[2]]), 5);
   // 1. 10. 2026 je čtvrtek → první týden: po–st prázdné
   const oct = ms[0];
   assert.deepEqual(plain(oct.weeks[0].map(c => c && c.d)), [null, null, null, 1, 2, 3, 4]);
@@ -181,8 +186,7 @@ test('calendarMonths — měsíce od prvního do posledního kola, týdny po–n
   assert.deepEqual(plain(calendarMonths([])), []);
 });
 
-test('calendarLegend / parseCzDate', () => {
+test('parseCzDate', () => {
   assert.equal(parseCzDate('x'), null);
-  assert.equal(calendarLegend([{ nr: 1, date: '18.10.2026' }, { nr: 2, date: '08.11.2026' }]).replace(/\u00A0/g, '_'),
-               '1._kolo_ne_18._10._2026  ·  2._kolo_ne_8._11._2026');
+  assert.equal(parseCzDate('08.11.2026').getDate(), 8);
 });

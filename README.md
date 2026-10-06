@@ -28,7 +28,7 @@ dále **Specifické požadavky** (seznam jiných začátků) a **Stránky soutě
      polí v náhledu (Enter = další zápas) nebo později ve Wordu.
    - **Kalendář** Ano/Ne (výchozí Ano) — na konec dokumentu stránka
      „Kalendář soutěže“: měsíce od prvního do posledního kola, dva vedle sebe,
-     týdny po–ne, dny utkání tučně podbarvené, víkend šedě, pod tím přehled kol.
+     týdny po–ne, čtvercové dny, dny utkání tučně podbarvené, víkend šedě.
 3. **Náhled** — rozměry tabulek jako v DOCX, nahoře upozornění (konflikty
    časů, neověřená startovní čísla, nerozlišené shodné jméno).
 4. **Stažení** — DOCX, název souboru navržen jako `rpb_26_27_uz`.
@@ -51,7 +51,7 @@ dále **Specifické požadavky** (seznam jiných začátků) a **Stránky soutě
   ostatní příznaky (K, ZK, H, V, C) oddělené čárkou.
 - **Shodná jména** v soupisce družstva → přípona *st.* / *ml.* podle roku
   narození. Stejný rok nebo víc než dva hráči → beze změny + varování.
-- **Písmo** Arial 10 pt, pevně. Je nastavené jen ve stylech dokumentu
+- **Písmo** Arial 11 pt (názvy družstev a měsíců 13 pt), pevně. Je nastavené jen ve stylech dokumentu
   (výchozí písmo dokumentu, Název, Podtitul, Nadpis 1), ne u jednotlivých
   textů — změna stylu ve Wordu se projeví v celém dokumentu.
   Záhlaví stránky *Region - Soutěž - Ročník*, zápatí *Strana X z Y*.

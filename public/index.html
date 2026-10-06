@@ -144,7 +144,7 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .preview-body { padding:12px; background:var(--header); overflow-x:auto; }
 .doc {
   width:794px; margin:0 auto; background:#fff; color:#000;
-  font-family:Arial, Helvetica, sans-serif; font-size:13.33px; line-height:1.15;
+  font-family:Arial, Helvetica, sans-serif; font-size:14.67px; line-height:1.15;
   padding:45.3px 26.5px 45.3px; border:1px solid var(--divider);
 }
 .doc-hdr { text-align:right; font-size:12px; color:#000; white-space:nowrap; overflow:hidden;
@@ -154,14 +154,14 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .doc .d-h { font-size:18.67px; font-weight:bold; margin:16px 0 8px; }
 .doc .d-p { margin:0 0 8px; }
 .doc .d-p a { color:#0563C1; }
-.doc table { border-collapse:collapse; table-layout:fixed; font-size:13.33px; line-height:1.15; margin-bottom:13.33px; }
+.doc table { border-collapse:collapse; table-layout:fixed; font-size:14.67px; line-height:1.15; margin-bottom:14.67px; }
 .doc td { border:1px solid #AAA; padding:1.6px 3.33px; vertical-align:middle;
   overflow:hidden; overflow-wrap:anywhere; }
 .doc .c { text-align:center; } .doc .r { text-align:right; }
 /* čísla (pořadí, St., ratingy) se nezalamují — sloupce jsou úzké stejně jako v DOCX */
 .doc td.c { white-space:nowrap; overflow-wrap:normal; text-overflow:clip; }
 .doc tr.th td { background:#C8D9F0; font-weight:bold; }
-.doc tr.tn td { font-size:16px; font-weight:bold; border-top:none; border-left:none; border-right:none; }
+.doc tr.tn td { font-size:17.33px; font-weight:bold; border-top:none; border-left:none; border-right:none; }
 .doc tr.rh td { font-weight:bold; border-top:none; border-left:none; border-right:none; }
 .doc tr.sh td { background:#F2F2F2; font-weight:bold; }
 .doc .tm { font-weight:bold; color:#C00000; }
@@ -172,13 +172,14 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .fit-warn { width:794px; max-width:100%; margin:0 auto 10px; padding:8px 12px; font-size:13px;
   background:#fff3cd; color:#664d03; border:1px solid #e6c46a; border-radius:2px; }
 .doc .pair { display:flex; align-items:flex-start; }
+.doc .pair table.ros { margin-bottom:0; }
+.doc table.ros td { padding-top:0; padding-bottom:0; }
 .doc .pgbr { margin:24px -26.5px; border-top:1px dashed #bbb; text-align:center; font-size:11px; color:#999; line-height:0; }
 .doc .pgbr span { background:#fff; padding:0 8px; }
 .doc table.cal td { text-align:center; }
-.doc table.cal tr.dw td { height:32px; }
+.doc table.cal tr.dw td { padding:0; }
 .doc table.cal td.hit { background:#C8D9F0; font-weight:bold; }
 .doc table.cal td.we { color:#808080; }
-.doc .legend { font-size:12px; margin-top:4px; }
 .fit-warn ul { margin:4px 0 0; padding-left:20px; }
 
 @media (max-width:640px) {
@@ -340,7 +341,8 @@ const MARGIN_Y = Math.round(1.2 * 567);   // 680 DXA
 const HDR_DIST = Math.round(0.5 * 567);   // 284 DXA
 const CONTENT  = PAGE_W - 2 * MARGIN_X;   // 11112 DXA
 const FONT    = 'Arial';
-const FS      = 20;                    // 10 pt (half-points) — pevně, není volitelné
+const FS      = 22;                    // 11 pt (half-points) — pevně, není volitelné
+const FS_NAME = 26;                    // 13 pt — název družstva / měsíce nad tabulkou
 
 // Soupiska: Šach. | Jméno | NRtg | IRtg | Z | Typ
 // Dvě soupisky vedle sebe: (šířka sazby − mezera) / 2 = 5456 DXA na soupisku.
@@ -348,14 +350,30 @@ const FS      = 20;                    // 10 pt (half-points) — pevně, není 
 const CELL_PAD    = 50;                    // vodorovný okraj buňky (DXA) — minimální, čitelný
 const ROSTER_GAP  = 200;                   // mezera mezi soupiskami vedle sebe
 const ROSTER_W    = Math.floor((CONTENT - ROSTER_GAP) / 2);
-const ROSTER_FIX  = [330, 0, 580, 580, 260, 600];   // šach. | jméno | NRtg | IRtg | Z | Typ
+const ROSTER_FIX  = [360, 0, 640, 620, 270, 650];   // šach. | jméno | NRtg | IRtg | Z | Typ (11 pt)
 const ROSTER_COLS = ROSTER_FIX.map(function(w) { return w || ROSTER_W - sum(ROSTER_FIX); });
+/* Výšky řádků soupisky (DXA, pevné): na stránku se vejdou 2 dvojice soupisek
+   po ROSTER_FULL hráčích s co nejvyššími řádky:
+     výška sazby = 2 × (název + (1 + ROSTER_FULL) × řádek) + mezera + 2 × odstavec mezery
+   Mezera mezi dvojicemi je „mezera za“ odstavcem 1 pt — na konci stránky ji
+   Word i LibreOffice zahodí, takže se nepřenese na začátek další stránky.
+   ROW_LINE = o kolik LibreOffice vykreslí řádek vyšší než zadanou přesnou výšku
+   (čáry; naměřeno ~20 DXA), ROSTER_SAFE = rezerva na zaokrouhlení. */
+const PAGE_BODY_H     = PAGE_H - 2 * MARGIN_Y;   // 15478
+const ROSTER_FULL     = 20;
+const ROSTER_TITLE_H  = 420;                     // název družstva (13 pt)
+const ROSTER_PAIR_GAP = 440;                     // mezera mezi dvojicemi ≈ 0,8 cm
+const GAP_PARA_H      = 20;                      // odstavec mezery: řádek přesně 1 pt
+const ROSTER_SAFE     = 100;
+const ROW_LINE        = 20;
+const ROSTER_ROW_H    = Math.floor((PAGE_BODY_H - ROSTER_SAFE - 2 * ROSTER_TITLE_H - ROSTER_PAIR_GAP - 2 * GAP_PARA_H)
+                                   / (2 * (1 + ROSTER_FULL))) - ROW_LINE;   // 314 DXA ≈ 0,55 cm (+ čáry)
 const ROSTER_HDRS = ['', 'Jméno', 'NRtg', 'IRtg', 'Z', 'Typ'];
 const Z_MARK = 'Z';                    // obsah buňky ve sloupci Z (základní sestava)
 
 // Rozlosování: Č. | St.č. | Družstvo | Výs. | Družstvo | St.č. | Rozhodčí
 const SCHED_HDRS = ['Č.', 'St.', 'Družstvo', '-', 'Družstvo', 'St.', 'Rozhodčí'];
-const COL_NR = 360, COL_STC = 440, COL_RES = 280, COL_REF = 1500;
+const COL_NR = 380, COL_STC = 460, COL_RES = 280, COL_REF = 1800;
 
 const API_INTERVAL = 300;
 const BLOCK_MS     = 10 * 60 * 1000;
@@ -636,13 +654,14 @@ function refShort(s) {
 const CZ_MONTHS = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen',
                    'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec'];
 const CZ_DAYS   = ['Po', 'Út', 'St', 'Čt', 'Pá', 'So', 'Ne'];
-const CZ_DOW    = ['ne', 'po', 'út', 'st', 'čt', 'pá', 'so'];
-const CAL_WEEKS = 6;               // každý měsíc 6 týdnů → stejně vysoké měsíce vedle sebe
-const CAL_ROW_H = 480;             // výška řádku dne (DXA ≈ 0,85 cm)
 /* „18.10.2026“ → Date (místní půlnoc), jinak null */
 function parseCzDate(s) {
   const m = /^\s*(\d{1,2})\.\s*(\d{1,2})\.\s*(\d{4})\s*$/.exec(s || '');
   return m ? new Date(+m[3], +m[2] - 1, +m[1]) : null;
+}
+/* Počet řádků týdnů dvojice měsíců vedle sebe (= delší z obou). */
+function pairWeeks(pair) {
+  return Math.max.apply(null, pair.map(function(mo) { return mo.weeks.length; }));
 }
 /* Měsíce od prvního do posledního kola; týdny po–ne, dny mimo měsíc = null,
    den = { d, rounds: [čísla kol] }. */
@@ -665,7 +684,7 @@ function calendarMonths(rounds) {
     const offset = (new Date(y, m, 1).getDay() + 6) % 7;   // pondělí = 0
     const days = new Date(y, m + 1, 0).getDate();
     const weeks = [];
-    for (let w = 0; w < CAL_WEEKS; w++) {
+    for (let w = 0; w < Math.ceil((offset + days) / 7); w++) {   // jen potřebné týdny (4–6)
       const wk = [];
       for (let i = 0; i < 7; i++) {
         const d = w * 7 + i - offset + 1;
@@ -677,17 +696,11 @@ function calendarMonths(rounds) {
   }
   return out;
 }
-/* Přehled kol pod kalendářem: „1. kolo ne 18. 10. 2026 · 2. kolo …“ */
-function calendarLegend(rounds) {
-  return rounds.map(function(r) {
-    const dt = parseCzDate(r.date);
-    // uvnitř položky nezlomitelné mezery → řádek se zalomí jen mezi koly
-    return (r.nr + '. kolo ' + (dt ? CZ_DOW[dt.getDay()] + ' ' + dt.getDate() + '. ' + (dt.getMonth() + 1) + '. ' + dt.getFullYear() : r.date))
-      .replace(/ /g, '\u00A0');
-  }).join('  ·  ');
-}
+// Měsíc o ~10 % užší než polovina sazby, dny čtvercové (výška řádku = šířka sloupce);
+// dvojice měsíců je na stránce vycentrovaná.
 const CAL_GAP = 400;
-const CAL_COL = Math.floor((CONTENT - CAL_GAP) / 14);
+const CAL_COL = Math.round((CONTENT - CAL_GAP) / 14 * 0.9);   // 689 DXA ≈ 1,2 cm
+const CAL_W   = 14 * CAL_COL + CAL_GAP;
 
 /* Kapitola Specifické požadavky: seznam jiných začátků (prázdné = žádné) */
 function requirementLines(d, cfg) {
@@ -867,11 +880,12 @@ function rosterPairs(teams) {
   return out;
 }
 function rosterHtml(t, rw) {
-  let h = '<table style="width:' + rw + '">' + colgroup(ROSTER_COLS) + '<tbody>'
-     + '<tr class="tn"><td colspan="6">' + t.stc + '&nbsp;&nbsp;' + esc(t.name) + '</td></tr>'
-     + '<tr class="sh">' + ROSTER_HDRS.map(function(x, i) { return '<td class="' + (i === 1 || i === 5 ? '' : 'c') + '">' + x + '</td>'; }).join('') + '</tr>';
+  const rh = ' style="height:' + px(ROSTER_ROW_H) + '"';
+  let h = '<table class="ros" style="width:' + rw + '">' + colgroup(ROSTER_COLS) + '<tbody>'
+     + '<tr class="tn" style="height:' + px(ROSTER_TITLE_H) + '"><td colspan="6" style="vertical-align:bottom">' + t.stc + '&nbsp;&nbsp;' + esc(t.name) + '</td></tr>'
+     + '<tr class="sh"' + rh + '>' + ROSTER_HDRS.map(function(x, i) { return '<td class="' + (i === 1 || i === 5 ? '' : 'c') + '">' + x + '</td>'; }).join('') + '</tr>';
   t.roster.forEach(function(p) {
-    h += '<tr><td class="c">' + p.pos + '</td><td>' + esc(displayName(p)) + '</td>'
+    h += '<tr' + rh + '><td class="c">' + p.pos + '</td><td>' + esc(displayName(p)) + '</td>'
        + '<td class="c">' + p.nrtg + '</td><td class="c">' + p.irtg + '</td>'
        + '<td class="c">' + (p.z ? Z_MARK : '') + '</td><td>' + esc(p.typ) + '</td></tr>';
   });
@@ -902,7 +916,7 @@ function previewHtml(d, cfg) {
   h += chap(2);
   const rw = px(sum(ROSTER_COLS));
   rosterPairs(d.teams).forEach(function(pair) {
-    h += '<div class="pair" style="gap:' + px(ROSTER_GAP) + '">';
+    h += '<div class="pair" style="gap:' + px(ROSTER_GAP) + ';margin-bottom:' + px(ROSTER_PAIR_GAP) + '">';
     pair.forEach(function(t) { h += rosterHtml(t, rw); });
     h += '</div>';
   });
@@ -947,15 +961,18 @@ function previewHtml(d, cfg) {
   // Kalendář (volitelná stránka)
   if (cfg.calendar) {
     h += '<div class="pgbr"><span>nová stránka</span></div>' + chap(9);
-    const cw = Array(7).fill(CAL_COL), mw = px(7 * CAL_COL);
+    const cw = Array(7).fill(CAL_COL), mw = px(7 * CAL_COL), sq = 'height:' + px(CAL_COL);
     rosterPairs(calendarMonths(d.rounds)).forEach(function(pair) {
-      h += '<div class="pair" style="gap:' + px(CONTENT - 14 * CAL_COL) + '">';
+      h += '<div class="pair" style="gap:' + px(CAL_GAP) + ';width:' + px(CAL_W) + ';margin:0 auto">';
       pair.forEach(function(mo) {
         h += '<table class="cal" style="width:' + mw + '">' + colgroup(cw) + '<tbody>'
            + '<tr class="tn"><td colspan="7" style="text-align:left">' + esc(mo.name) + '</td></tr>'
            + '<tr class="sh">' + CZ_DAYS.map(function(x) { return '<td>' + x + '</td>'; }).join('') + '</tr>';
-        mo.weeks.forEach(function(wk) {
-          h += '<tr class="dw">' + wk.map(function(c, i) {
+        // kratší měsíc dvojice doplněný prázdným týdnem → oba stejně vysoké
+        const wks = mo.weeks.slice();
+        while (wks.length < pairWeeks(pair)) wks.push(Array(7).fill(null));
+        wks.forEach(function(wk) {
+          h += '<tr class="dw" style="' + sq + '">' + wk.map(function(c, i) {
             if (!c) return '<td></td>';
             const cls = c.rounds.length ? 'hit' : (i >= 5 ? 'we' : '');
             return '<td class="' + cls + '"' + (c.rounds.length ? ' title="' + c.rounds.join('., ') + '. kolo"' : '') + '>' + c.d + '</td>';
@@ -965,7 +982,6 @@ function previewHtml(d, cfg) {
       });
       h += '</div>';
     });
-    h += '<div class="d-p legend">' + esc(calendarLegend(d.rounds)) + '</div>';
   }
   return h + '</div>';
 }
@@ -1006,7 +1022,7 @@ function cell(content, opts) {
   return new docx.TableCell({
     width:         { size: opts.w || 1000, type: 'dxa' },
     columnSpan:    opts.span || 1,
-    verticalAlign: 'center',
+    verticalAlign: opts.valign || 'center',
     shading:       { fill: opts.bg || C_WHITE, type: 'clear' },
     borders:       opts.borders || (opts.noBorder ? B_NONE : B_ALL),
     margins:       { top: 20, bottom: 20, left: CELL_PAD, right: CELL_PAD },
@@ -1019,7 +1035,14 @@ function cell(content, opts) {
     })],
   });
 }
-function row(cells) { return new docx.TableRow({ cantSplit: true, children: cells }); }
+function row(cells, h) {
+  return new docx.TableRow({ cantSplit: true, children: cells,
+                             height: h ? { value: h, rule: docx.HeightRule.EXACT } : undefined });
+}
+/* Mezera mezi dvojicemi soupisek: odstavec 1 pt + mezera za (na konci stránky zmizí). */
+function pairGap() {
+  return new docx.Paragraph({ spacing: { before: 0, after: ROSTER_PAIR_GAP, line: GAP_PARA_H, lineRule: 'exact' }, children: [] });
+}
 function table(cols, rows) {
   return new docx.Table({ width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows });
 }
@@ -1047,12 +1070,12 @@ function chapter(i) {
 function calHalf(mo, ri, kn) {
   const w7 = 7 * CAL_COL;
   if (!mo) return [cell('', { w: w7, span: 7, noBorder: true, keepNext: kn })];
-  if (ri === 0) return [cell(mo.name, { w: w7, span: 7, bold: true, size: 24, keepNext: kn,
+  if (ri === 0) return [cell(mo.name, { w: w7, span: 7, bold: true, size: FS_NAME, keepNext: kn,
                                         borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } })];
   if (ri === 1) return CZ_DAYS.map(function(x) {
     return cell(x, { w: CAL_COL, bold: true, bg: C_SUB, align: 'center', keepNext: kn });
   });
-  return mo.weeks[ri - 2].map(function(c, i) {
+  return (mo.weeks[ri - 2] || Array(7).fill(null)).map(function(c, i) {   // kratší měsíc: prázdný týden
     if (!c) return cell('', { w: CAL_COL, keepNext: kn });
     const hit = c.rounds.length > 0;
     return cell([new docx.TextRun({ text: String(c.d), bold: hit || undefined,
@@ -1061,14 +1084,15 @@ function calHalf(mo, ri, kn) {
   });
 }
 function calendarPair(pair) {
-  const gapW = CONTENT - 14 * CAL_COL;
+  const gapW = CAL_GAP;
   const cols = Array(7).fill(CAL_COL).concat([gapW], Array(7).fill(CAL_COL));
-  const n = 2 + CAL_WEEKS, rows = [];
+  const n = 2 + pairWeeks(pair), rows = [];
   for (let ri = 0; ri < n; ri++) {
     const kn = ri < n - 1;
     rows.push(new docx.TableRow({
       cantSplit: true,
-      height: ri >= 1 ? { value: ri === 1 ? 320 : CAL_ROW_H, rule: docx.HeightRule.ATLEAST } : undefined,
+      height: ri === 1 ? { value: 320, rule: docx.HeightRule.ATLEAST }
+            : ri > 1 ? { value: CAL_COL, rule: docx.HeightRule.EXACT } : undefined,   // dny čtvercové
       children: calHalf(pair[0], ri, kn)
         .concat([cell('', { w: gapW, keepNext: kn, borders: {
           top: B_N, bottom: B_N, left: ri > 0 && pair[0] ? B_S : B_N, right: ri > 0 && pair[1] ? B_S : B_N } })],
@@ -1076,7 +1100,7 @@ function calendarPair(pair) {
     }));
   }
   return new docx.Table({
-    width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows,
+    width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows, alignment: 'center',
     borders: { top: B_N, bottom: B_N, left: B_N, right: B_N, insideHorizontal: B_N, insideVertical: B_N },
   });
 }
@@ -1100,7 +1124,7 @@ function rosterHalf(t, ri, kn) {
   }
   // číslo a název družstva: 12 pt, bez podbarvení a bez hran nahoře a po stranách
   if (ri === 0) return [
-    cell(t.stc + '  ' + t.name, { w: sum(cw), span: 6, bold: true, size: 24, keepNext: kn,
+    cell(t.stc + '  ' + t.name, { w: sum(cw), span: 6, bold: true, size: FS_NAME, keepNext: kn, valign: 'bottom',
                                   borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } }),
   ];
   if (ri === 1) return ROSTER_HDRS.map(function(x, i) {
@@ -1126,7 +1150,7 @@ function rosterPair(pair) {
       .concat([cell('', { w: ROSTER_GAP, keepNext: kn, borders: {
         top: B_N, bottom: B_N,
         left: ri > 0 && rosterFilled(pair[0], ri) ? B_S : B_N, right: ri > 0 && rosterFilled(pair[1], ri) ? B_S : B_N } })],
-        rosterHalf(pair[1], ri, kn))));
+        rosterHalf(pair[1], ri, kn)), ri === 0 ? ROSTER_TITLE_H : ROSTER_ROW_H));
   }
   return new docx.Table({
     width: { size: sum(cols), type: 'dxa' }, columnWidths: cols, rows: rows,
@@ -1174,7 +1198,7 @@ function buildDocx(d, cfg) {
   ch.push(chapter(0), gap(), chapter(1), gap());
 
   ch.push(chapter(2));
-  rosterPairs(d.teams).forEach(function(pair) { ch.push(rosterPair(pair), gap()); });
+  rosterPairs(d.teams).forEach(function(pair) { ch.push(rosterPair(pair), pairGap()); });
 
   ch.push(chapter(3));
   sv.rounds.forEach(function(r, i) {
@@ -1205,8 +1229,8 @@ function buildDocx(d, cfg) {
     ch.push(new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_1, numbering: { reference: 'kap', level: 0 },
                                  pageBreakBefore: true, keepNext: true, spacing: { before: 0, after: 120 },
                                  children: [run(CHAPTERS[9])] }));
-    rosterPairs(calendarMonths(d.rounds)).forEach(function(pair) { ch.push(calendarPair(pair), gap()); });
-    ch.push(para([new docx.TextRun({ text: calendarLegend(d.rounds), size: 18 })], { spacing: { before: 60, after: 0 } }));
+    const pairs = rosterPairs(calendarMonths(d.rounds));
+    pairs.forEach(function(pair, i) { ch.push(calendarPair(pair)); if (i < pairs.length - 1) ch.push(gap()); });
   }
 
   const header = new docx.Header({ children: [new docx.Paragraph({
