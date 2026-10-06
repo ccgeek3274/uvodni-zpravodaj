@@ -144,7 +144,7 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .preview-body { padding:12px; background:var(--header); overflow-x:auto; }
 .doc {
   width:794px; margin:0 auto; background:#fff; color:#000;
-  font-family:Arial, Helvetica, sans-serif; font-size:14.67px; line-height:1.15;
+  font-family:Calibri, Carlito, Arial, sans-serif; font-size:16px; line-height:1.2;
   padding:45.3px 26.5px 45.3px; border:1px solid var(--divider);
 }
 .doc-hdr { text-align:right; font-size:12px; color:#000; white-space:nowrap; overflow:hidden;
@@ -154,14 +154,14 @@ button:focus-visible { outline:2px solid var(--ink); outline-offset:2px; }
 .doc .d-h { font-size:18.67px; font-weight:bold; margin:16px 0 8px; }
 .doc .d-p { margin:0 0 8px; }
 .doc .d-p a { color:#0563C1; }
-.doc table { border-collapse:collapse; table-layout:fixed; font-size:14.67px; line-height:1.15; margin-bottom:14.67px; }
-.doc td { border:1px solid #AAA; padding:1.6px 3.33px; vertical-align:middle;
+.doc table { border-collapse:collapse; table-layout:fixed; font-size:16px; line-height:1.2; margin-bottom:16px; }
+.doc td { border:1px solid #AAA; padding:0 3.33px; vertical-align:middle;
   overflow:hidden; overflow-wrap:anywhere; }
 .doc .c { text-align:center; } .doc .r { text-align:right; }
 /* čísla (pořadí, St., ratingy) se nezalamují — sloupce jsou úzké stejně jako v DOCX */
 .doc td.c { white-space:nowrap; overflow-wrap:normal; text-overflow:clip; }
 .doc tr.th td { background:#C8D9F0; font-weight:bold; }
-.doc tr.tn td { font-size:17.33px; font-weight:bold; border-top:none; border-left:none; border-right:none; }
+.doc tr.tn td { font-size:18.67px; font-weight:bold; border-top:none; border-left:none; border-right:none; }
 .doc tr.rh td { font-weight:bold; border-top:none; border-left:none; border-right:none; }
 .doc tr.sh td { background:#F2F2F2; font-weight:bold; }
 .doc .tm { font-weight:bold; color:#C00000; }
@@ -340,9 +340,14 @@ const MARGIN_X = Math.round(0.7 * 567);   // 397 DXA
 const MARGIN_Y = Math.round(1.2 * 567);   // 680 DXA
 const HDR_DIST = Math.round(0.5 * 567);   // 284 DXA
 const CONTENT  = PAGE_W - 2 * MARGIN_X;   // 11112 DXA
-const FONT    = 'Arial';
-const FS      = 22;                    // 11 pt (half-points) — pevně, není volitelné
-const FS_NAME = 26;                    // 13 pt — název družstva / měsíce nad tabulkou
+const FONT    = 'Calibri';
+const FS      = 24;                    // 12 pt (half-points) — pevně, není volitelné
+const FS_NAME = 28;                    // 14 pt — název družstva / měsíce nad tabulkou
+/* Řádek textu v buňce: přesně 1,2 × velikost písma (twips = half-points × 12).
+   Přirozená výška řádku závisí na písmu (Calibri ~1,22 em, náhradní písmo bez
+   Calibri i víc) — když obsah přeroste pevnou výšku řádku tabulky, LibreOffice
+   ho nevycentruje a přilepí k hornímu okraji. Pevný řádek se vejde vždy. */
+function cellLine(size) { return (size || FS) * 12; }
 
 // Soupiska: Šach. | Jméno | NRtg | IRtg | Z | Typ
 // Dvě soupisky vedle sebe: (šířka sazby − mezera) / 2 = 5456 DXA na soupisku.
@@ -350,7 +355,7 @@ const FS_NAME = 26;                    // 13 pt — název družstva / měsíce 
 const CELL_PAD    = 50;                    // vodorovný okraj buňky (DXA) — minimální, čitelný
 const ROSTER_GAP  = 200;                   // mezera mezi soupiskami vedle sebe
 const ROSTER_W    = Math.floor((CONTENT - ROSTER_GAP) / 2);
-const ROSTER_FIX  = [360, 0, 640, 620, 270, 650];   // šach. | jméno | NRtg | IRtg | Z | Typ (11 pt)
+const ROSTER_FIX  = [360, 0, 640, 620, 270, 650];   // šach. | jméno | NRtg | IRtg | Z | Typ (Calibri 12 pt)
 const ROSTER_COLS = ROSTER_FIX.map(function(w) { return w || ROSTER_W - sum(ROSTER_FIX); });
 /* Výšky řádků soupisky (DXA, pevné): na stránku se vejdou 2 dvojice soupisek
    po ROSTER_FULL hráčích s co nejvyššími řádky:
@@ -361,7 +366,7 @@ const ROSTER_COLS = ROSTER_FIX.map(function(w) { return w || ROSTER_W - sum(ROST
    (čáry; naměřeno ~20 DXA), ROSTER_SAFE = rezerva na zaokrouhlení. */
 const PAGE_BODY_H     = PAGE_H - 2 * MARGIN_Y;   // 15478
 const ROSTER_FULL     = 20;
-const ROSTER_TITLE_H  = 420;                     // název družstva (13 pt)
+const ROSTER_TITLE_H  = 420;                     // název družstva (14 pt)
 const ROSTER_PAIR_GAP = 440;                     // mezera mezi dvojicemi ≈ 0,8 cm
 const GAP_PARA_H      = 20;                      // odstavec mezery: řádek přesně 1 pt
 const ROSTER_SAFE     = 100;
@@ -1025,12 +1030,12 @@ function cell(content, opts) {
     verticalAlign: opts.valign || 'center',
     shading:       { fill: opts.bg || C_WHITE, type: 'clear' },
     borders:       opts.borders || (opts.noBorder ? B_NONE : B_ALL),
-    margins:       { top: 20, bottom: 20, left: CELL_PAD, right: CELL_PAD },
+    margins:       { top: 0, bottom: 0, left: CELL_PAD, right: CELL_PAD },
     children: [new docx.Paragraph({
       alignment: opts.align || 'left',
       keepNext:  opts.keepNext || false,   // drží řádek s dalším → tabulka se nerozdělí
       keepLines: true,
-      spacing:   { before: 0, after: 0 },
+      spacing:   { before: 0, after: 0, line: cellLine(opts.size), lineRule: 'exact' },
       children:  runs,
     })],
   });
@@ -1065,7 +1070,7 @@ function chapter(i) {
 }
 
 /* Kalendář: dvojice měsíců jako jedna plochá tabulka (7 dnů | mezera | 7 dnů),
-   stejný princip hran jako u soupisek. Nad měsícem název 12 pt bez hran,
+   stejný princip hran jako u soupisek. Nad měsícem název 14 pt bez hran,
    dny utkání podbarvené a tučně, víkend šedě. */
 function calHalf(mo, ri, kn) {
   const w7 = 7 * CAL_COL;
@@ -1108,7 +1113,7 @@ function calendarPair(pair) {
 /* Dvojice soupisek vedle sebe jako jedna plochá tabulka:
    6 sloupců levé soupisky | mezera bez čar | 6 sloupců pravé.
    (Vnořené tabulky LibreOffice stránkuje špatně — každou dvojici na novou stranu.)
-   Nad tabulkou číslo a název družstva (12 pt, bez podbarvení a hran).
+   Nad tabulkou číslo a název družstva (14 pt, bez podbarvení a hran).
    Hrany jsou všude výslovně (ne přes řešení konfliktů sousedních buněk,
    které prohlížeče vykreslují různě): pod kratší soupiskou prázdné buňky bez
    hran, jen první z nich má horní hranu = spodní hrana posledního hráče;
@@ -1122,7 +1127,7 @@ function rosterHalf(t, ri, kn) {
     return [cell('', { w: sum(cw), span: 6, keepNext: kn,
                        borders: { top: under ? B_S : B_N, bottom: B_N, left: B_N, right: B_N } })];
   }
-  // číslo a název družstva: 12 pt, bez podbarvení a bez hran nahoře a po stranách
+  // číslo a název družstva: 14 pt, bez podbarvení a bez hran nahoře a po stranách
   if (ri === 0) return [
     cell(t.stc + '  ' + t.name, { w: sum(cw), span: 6, bold: true, size: FS_NAME, keepNext: kn, valign: 'bottom',
                                   borders: { top: B_N, left: B_N, right: B_N, bottom: B_S } }),

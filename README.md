@@ -51,16 +51,20 @@ dále **Specifické požadavky** (seznam jiných začátků) a **Stránky soutě
   ostatní příznaky (K, ZK, H, V, C) oddělené čárkou.
 - **Shodná jména** v soupisce družstva → přípona *st.* / *ml.* podle roku
   narození. Stejný rok nebo víc než dva hráči → beze změny + varování.
-- **Písmo** Arial 11 pt (názvy družstev a měsíců 13 pt), pevně. Je nastavené jen ve stylech dokumentu
+- **Písmo** Calibri 12 pt (názvy družstev a měsíců 14 pt), pevně. Je nastavené jen ve stylech dokumentu
   (výchozí písmo dokumentu, Název, Podtitul, Nadpis 1), ne u jednotlivých
   textů — změna stylu ve Wordu se projeví v celém dokumentu.
   Záhlaví stránky *Region - Soutěž - Ročník*, zápatí *Strana X z Y*.
+  Text v buňkách tabulek má pevnou výšku řádku 1,2 × velikost písma a nulový
+  svislý okraj buňky — obsah se tak vždy vejde do řádku s pevnou výškou
+  a LibreOffice ho svisle vycentruje (jinak, např. bez písma Calibri, ho
+  přilepí k hornímu okraji).
 - **Okraje** na tisknutelné minimum: boky 0,7 cm, nahoře/dole 1,2 cm
   (záhlaví/zápatí 0,5 cm od kraje). Vnitřní okraje buněk minimální (50 DXA).
 - **Soupisky po dvou vedle sebe** — jedna plochá tabulka na dvojici
   (6 sloupců | mezera | 6 sloupců; vnořené tabulky LibreOffice stránkuje
   špatně). Sloupec pořadí bez nadpisu; nad tabulkou číslo a název družstva
-  12 pt bez podbarvení a hran (bez průměrného ratingu).
+  14 pt bez podbarvení a hran (bez průměrného ratingu).
 - **Rozlosování** — sloupce Č. | St. | Družstvo | - | Družstvo | St. | Rozhodčí,
   rozhodčí zkrácen na „Příjmení J.“ (v náhledu po opuštění pole).
 - Tabulky (dvojice soupisek, kola) se nedělí mezi stránky (`cantSplit` + `keepNext`).
